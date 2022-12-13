@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="sbt: com.google.ortools:ortools-java:9.5.2237:jar">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/com/google/ortools/ortools-java/9.5.2237/ortools-java-9.5.2237.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$USER_HOME$/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/com/google/ortools/ortools-java/9.5.2237/ortools-java-9.5.2237-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$USER_HOME$/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/com/google/ortools/ortools-java/9.5.2237/ortools-java-9.5.2237-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>
