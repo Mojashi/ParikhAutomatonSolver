@@ -1,6 +1,5 @@
 package xyz.mojashi
 package solver
-
 package object mp {
   def addVector[Key, Value: Numeric](l: Map[Key, Value], r: Map[Key, Value])
                                     (implicit m: Numeric[Value]): Map[Key, Value] = {
@@ -32,7 +31,7 @@ package object mp {
       case Sub(left, right) =>
         val (l, lc) = getCoefficients(left)
         val (r, rc) = getCoefficients(right)
-        (subVector(l, r), m.min(lc, rc))
+        (subVector(l, r)  , m.min(lc, rc))
       case Times(constant, term) =>
         val (r, rc) = getCoefficients(term)
         (mulVector[Label, Value](constant.v, r), m.times(constant.v, rc))
@@ -40,4 +39,6 @@ package object mp {
       case Constant(v) => (Map(), v)
     }
   }
+
+
 }

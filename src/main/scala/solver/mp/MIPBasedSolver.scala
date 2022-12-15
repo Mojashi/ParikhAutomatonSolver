@@ -3,12 +3,15 @@ package solver.mp
 
 import solver.ParikhAutomatonSolver
 
-import com.google.ortools.linearsolver.{MPSolver, MPVariable}
+import com.google.ortools.linearsolver.{MPConstraint, MPSolver, MPVariable}
 
 abstract class MIPBasedSolver[In, State, Label, Value: Numeric]
 (
   val pa: ParikhAutomaton[In, State, Label, Value]
 ) extends ParikhAutomatonSolver[In, State, Label, Value] {
+  type EdgeID = Edge[State]#EdgeID
+
+  val labels = pa.voa.transitions.flatMap(t => t.Out.keys).toSet
 
   val mpSolver = MPSolver.createSolver("SCIP")
   val m = implicitly[Numeric[Value]]
@@ -26,18 +29,37 @@ abstract class MIPBasedSolver[In, State, Label, Value: Numeric]
     obj.setMinimization()
   }
 
-  def getMPVariable(name: String): MPVariable = {
+  def getMPVariable(name: String, init: MPVariable=>Unit = _=>{}): MPVariable = {
     val ret = mpSolver.lookupVariableOrNull(name)
     if(ret == null) {
-      mpSolver.makeVar(-MPSolver.infinity(), MPSolver.infinity(), false, name)
+      val newV = mpSolver.makeVar(-MPSolver.infinity(), MPSolver.infinity(), false, name)
+      init(newV)
+      newV
     } else {
       ret
     }
   }
 
+  def getConstraint(name: ConstraintID): MPConstraint = {
+    val ret = mpSolver.lookupConstraintOrNull(name)
+    if (ret == null) {
+      mpSolver.makeConstraint(name)
+    } else {
+      ret
+    }
+  }
+
+
   def getMPVariableForLabel(label: Label): MPVariable =
-    getMPVariable("LABEL_VAR_" + label)
-  def getMPVariableForEdgeUsedCount()
+    getMPVariable(s"LABEL_VAR{$label}")
+
+  val IntegerNumEdgeUsed = false
+  def getMPVariableForNumEdgeUsed(edgeID: EdgeID) = {
+    getMPVariable(s"NUM_EDGE_USED{$edgeID}", v=>{
+      v.setInteger(IntegerNumEdgeUsed)
+      v.setLb(0)
+    })
+  }
 
   override def addConstraint(constraint: AtomPredicate[Label, Value], constraintID: ConstraintID): ConstraintID = {
     val (cons,left,right) = constraint match {
@@ -60,8 +82,6 @@ abstract class MIPBasedSolver[In, State, Label, Value: Numeric]
       constraintID
   }
 
-
-
   override def removeConstraint(constraintID: ConstraintID): Unit = {
     val cons = mpSolver.lookupConstraintOrNull(constraintID)
     if(cons == null) return
@@ -70,23 +90,52 @@ abstract class MIPBasedSolver[In, State, Label, Value: Numeric]
     cons.delete()
   }
 
+  initBaseConstraint
 
   def initBaseConstraint = {
-    def initCalcParikhImageConstraint = {
-      normalized.calcParikhImageForLP
-      val parikhVars = normalized.MPParikhVars()
+    initCalcParikhImageConstraint
+    initEulerConstraint
+  }
 
-      normalized.keys.foreach(key => {
-        parikhVars.chCountVar(key).setLb(0)
-        parikhVars.chCountVar(key).setUb(0)
+  def initCalcParikhImageConstraint = {
+    labels.toSeq.map(label => {
+      val cons = getConstraint(s"CALC_PARIKH_CONSTRAINT{$label}")
+
+      cons.setBounds(0, 0)
+      cons.setCoefficient(getMPVariableForLabel(label), -1)
+
+      pa.voa.transitions.filter(t =>
+        m.gt(t.Out.getOrElse(label, m.zero), m.zero)
+      ).foreach(t => {
+        cons.setCoefficient(
+          getMPVariableForNumEdgeUsed(t.id),
+          m.toDouble(t.Out.getOrElse(label, m.zero))
+        )
       })
 
-    }
-    def initEulerConstraint = {
-      normalized.baseFlowConnectedConstraintInLP()
+      cons
+    })
+  }
 
-      val flowVars = normalized.MPConnectivityFlowVars()
-      flowVars.flowConstraint(normalized.start).setBounds(-1, -1)
-    }
+  def initEulerConstraint = {
+    pa.voa.states.map(s => {
+      val cons = getConstraint(s"EULER_CONSTRAINT{$s}")
+
+      s match {
+        case pa.voa.start => cons.setBounds(-1, -1)
+        case pa.voa.fin => cons.setBounds(1, 1)
+        case _ => cons.setBounds(0, 0)
+      }
+
+      pa.voa.sourceFrom(s).foreach(t =>
+        cons.setCoefficient(getMPVariableForNumEdgeUsed(t.id), -1)
+      )
+      pa.voa.targetTo(s).foreach(t => {
+        val v = getMPVariableForNumEdgeUsed(t.id)
+        cons.setCoefficient(v, cons.getCoefficient(v) + 1)
+      })
+
+      cons
+    })
   }
 }
