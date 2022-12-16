@@ -8,6 +8,9 @@ libraryDependencies += {
     case linux if linux.contains("linux") => "com.google.ortools" % "ortools-linux-aarch64" % "9.5.2237"
   }
 }
+
+libraryDependencies += "org.sosy-lab" % "java-smt" % "3.14.3"
+
 libraryDependencies += "com.google.ortools" % "ortools-java" % "9.5.2237"
 
 libraryDependencies += "org.scalactic" %% "scalactic" % "3.2.14"

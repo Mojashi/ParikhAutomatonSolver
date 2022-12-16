@@ -7,14 +7,13 @@ import xyz.mojashi.automaton.ParikhAutomaton
 import xyz.mojashi.graph
 import xyz.mojashi.graph.EdgeID
 
-
-class MIPExactSolver[In, State, Label, Value: Numeric]
+class MIPSinglePointSolver[In, State, Label, Value: Numeric]
 (
-  pa: ParikhAutomaton[In, State, Label, Value]
+  pa: ParikhAutomaton[In, State, Label, Value],
+  lpRelaxed: Boolean = false,
+  ensureOptimumObjective: Boolean = true,
 )
-  extends MIPBasedSolver[In, State, Label, Value](pa) {
-
-  override def IntegerNumEdgeUsed = true
+  extends MIPBasedSolver[In, State, Label, Value](pa, lpRelaxed) {
 
   override def initBaseConstraint: Unit = {
     super.initBaseConstraint
@@ -105,8 +104,9 @@ class MIPExactSolver[In, State, Label, Value: Numeric]
         val tmp = rec(connected ++ newConnected, notConnected ++ newNotConnected)
 
         if (tmp.isDefined) {
+
           val (objV, neu) = tmp.get
-          if(isConstantObjective()) return tmp
+          if(isConstantObjective() || !ensureOptimumObjective) return tmp
 
           if (minObj > objV) {
             minObj = Math.min(minObj, objV)
@@ -128,18 +128,5 @@ class MIPExactSolver[In, State, Label, Value: Numeric]
     println(ret)
     ret.flatMap(r => Some(r._2))
   }
-
-  def solveInput(): Option[Seq[In]] = {
-    solve().flatMap(neu => Some(
-      graph.getEulerTrail(
-        pa.voa,
-        neu.map{case (e,c) =>
-          (e, Math.round(c).toInt)
-        }).flatMap(t =>
-          pa.voa.findTransitionByID(t.id).get.in
-        )
-    ))
-  }
-
 }
 

@@ -9,11 +9,13 @@ import xyz.mojashi.graph.{Edge, EdgeID}
 
 abstract class MIPBasedSolver[In, State, Label, Value: Numeric]
 (
-  val pa: ParikhAutomaton[In, State, Label, Value]
+  val pa: ParikhAutomaton[In, State, Label, Value],
+  val lpRelaxed:Boolean = false,
+  val ensureConnectivity: Boolean = true,
 ) extends ParikhAutomatonSolver[In, State, Label, Value] {
   val labels = pa.voa.transitions.flatMap(t => t.out.keys).toSet
 
-  val mpSolver = MPSolver.createSolver("SCIP")
+  val mpSolver = MPSolver.createSolver(if(lpRelaxed) "CLP" else "SCIP")
   val m = implicitly[Numeric[Value]]
 
   val objective = Constant(0)
@@ -60,10 +62,9 @@ abstract class MIPBasedSolver[In, State, Label, Value: Numeric]
   def getMPVariableForLabel(label: Label): MPVariable =
     getMPVariable(s"LABEL_VAR{$label}")
 
-  def IntegerNumEdgeUsed = false
   def getMPVariableForNumEdgeUsed(edgeID: EdgeID) = {
     getMPVariable(s"NUM_EDGE_USED{$edgeID}", v=>{
-      v.setInteger(IntegerNumEdgeUsed)
+      v.setInteger(!lpRelaxed)
       v.setLb(0)
     })
   }

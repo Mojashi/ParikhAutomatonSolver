@@ -25,10 +25,13 @@ class MIPExactSolverTest extends AnyFunSuiteLike {
       voa = a
     )
 
-    val solver = new MIPExactSolver(pa)
+    val solver = new MIPSinglePointSolver(pa, ensureOptimumObjective = true)
     solver.setObjective(Sub(Var[Char, Int]('z'), Var[Char, Int]('k')))
 
-    val inputOpt = solver.solveInput()
+    val inputOpt = for {
+      neu <- solver.solve()
+      in <- Some(getInputFromNEU(pa.voa, neu))
+    } yield in
     assert(inputOpt.isDefined)
 
     val input = inputOpt.get
@@ -37,5 +40,4 @@ class MIPExactSolverTest extends AnyFunSuiteLike {
     assert(input.count(ch => ch == 'z') >= 11)
     assert(input.count(ch=>ch=='z') == 2 * input.count(ch=>ch == 'y'))
   }
-
 }

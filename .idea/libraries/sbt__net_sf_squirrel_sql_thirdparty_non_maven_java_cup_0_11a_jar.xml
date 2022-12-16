@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="sbt: net.sf.squirrel-sql.thirdparty-non-maven:java-cup:0.11a:jar">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/net/sf/squirrel-sql/thirdparty-non-maven/java-cup/0.11a/java-cup-0.11a.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/net/sf/squirrel-sql/thirdparty-non-maven/java-cup/0.11a/java-cup-0.11a-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

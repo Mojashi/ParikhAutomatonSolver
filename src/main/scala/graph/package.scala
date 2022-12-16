@@ -12,7 +12,7 @@ package object graph {
   (
     g: NFA[In, State, T],
     neu: Map[EdgeID, Int]
-  ): Seq[Edge[State]] = {
+  ): Seq[T] = {
     val curNEU = mutable.Map.empty[EdgeID, Int]
 
     val trail = mutable.ListBuffer[EdgeID]()
@@ -27,6 +27,8 @@ package object graph {
     }
 
     dfs(g.start, None)
+
+    assert(neu.forall{case (id, c) => curNEU.getOrElse(id, 0) == c})
 
     (for {
       t <- trail.toSeq

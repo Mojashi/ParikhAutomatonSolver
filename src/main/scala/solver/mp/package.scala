@@ -3,6 +3,9 @@ package solver
 
 import utils.{addVector, mulVector, subVector}
 
+import xyz.mojashi.automaton.{NFA, Transition}
+import xyz.mojashi.graph.{Edge, EdgeID}
+
 package object mp {
   def getCoefficients[Label, Value: Numeric]
     (expression: Expression[Label, Value]): (Map[Label, Value], Value) = {
@@ -23,4 +26,14 @@ package object mp {
       case Constant(v) => (Map(), v)
     }
   }
+
+  def getInputFromNEU[In,State](nfa: NFA[In, State, Transition[Option[In], State]], neu: Map[EdgeID, Double]): Seq[In] = {
+    graph.getEulerTrail(
+      nfa,
+      neu.map { case (e, c) =>
+        assert(Math.abs(Math.round(c) - c) < 0.01)
+        (e, Math.round(c).toInt)
+    }).flatMap(t => t.in)
+  }
+
 }
