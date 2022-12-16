@@ -1,9 +1,9 @@
 package xyz.mojashi
-package solver.mp
+package graph
 
 import scala.collection.mutable.{HashMap, Map}
 
-class UnionFind[T]() {
+class UnionFind[T] {
   private val parent: Map[T, T] = new HashMap[T, T] {
     override def default(s: T) = {
       get(s) match {
@@ -24,10 +24,6 @@ class UnionFind[T]() {
     }
   }
 
-  /**
-   * Return the parent (representant) of the equivalence class.
-   * Uses path compression.
-   */
   def find(s: T): T = {
     val ps = parent(s)
     if (ps == s) s else {
@@ -37,10 +33,6 @@ class UnionFind[T]() {
     }
   }
 
-  /**
-   * Unify equivalence classes of elements.
-   * Uses union by rank.
-   */
   def union(x: T, y: T): Unit = {
     val cx = find(x)
     val cy = find(y)
@@ -56,9 +48,6 @@ class UnionFind[T]() {
     }
   }
 
-  /**
-   * Enumerates the equivalence class of element x
-   */
   def equivalenceClass(x: T): List[T] = {
     val px = parent(x)
     parent.keys.filter(key => parent(key: T) == px).toList

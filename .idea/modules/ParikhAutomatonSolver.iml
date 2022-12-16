@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<module external.linked.project.id="root [file:/Users/aomori/repos/ParikhAutomatonSolver/]" external.linked.project.path="$MODULE_DIR$/../.." external.root.project.path="$MODULE_DIR$/../.." external.system.id="SBT" type="JAVA_MODULE" version="4">
+<module external.linked.project.id="root [file:/home/mojashi/repos/ParikhAutomatonSolver/]" external.linked.project.path="$MODULE_DIR$/../.." external.root.project.path="$MODULE_DIR$/../.." external.system.id="SBT" type="JAVA_MODULE" version="4">
   <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_8">
     <output url="file://$MODULE_DIR$/../../target/scala-2.13/classes" />
     <output-test url="file://$MODULE_DIR$/../../target/scala-2.13/test-classes" />
@@ -12,11 +12,11 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" exported="" name="sbt: com.google.ortools:ortools-darwin-aarch64:9.5.2237:jar" level="project" />
-    <orderEntry type="library" exported="" name="sbt: com.google.ortools:ortools-darwin-x86-64:9.5.2237:jar" level="project" />
+    <orderEntry type="library" name="sbt: com.google.ortools:ortools-darwin-aarch64:9.5.2237:jar" level="project" />
+    <orderEntry type="library" name="sbt: com.google.ortools:ortools-darwin-x86-64:9.5.2237:jar" level="project" />
     <orderEntry type="library" name="sbt: com.google.ortools:ortools-java:9.5.2237:jar" level="project" />
-    <orderEntry type="library" exported="" name="sbt: com.google.ortools:ortools-linux-aarch64:9.5.2237:jar" level="project" />
-    <orderEntry type="library" exported="" name="sbt: com.google.ortools:ortools-linux-x86-64:9.5.2237:jar" level="project" />
+    <orderEntry type="library" name="sbt: com.google.ortools:ortools-linux-aarch64:9.5.2237:jar" level="project" />
+    <orderEntry type="library" name="sbt: com.google.ortools:ortools-linux-x86-64:9.5.2237:jar" level="project" />
     <orderEntry type="library" name="sbt: com.google.ortools:ortools-win32-x86-64:9.5.2237:jar" level="project" />
     <orderEntry type="library" name="sbt: com.google.protobuf:protobuf-java:3.21.5:jar" level="project" />
     <orderEntry type="library" name="sbt: net.java.dev.jna:jna-platform:5.11.0:jar" level="project" />

@@ -1,8 +1,8 @@
 package xyz.mojashi
 
 // Out must be monoid
-trait NFA[In, State] extends Graph [State] {
-  type T = Transition[In, State]
+trait NFTransducer[In, Out, State] extends NFA[In, State] {
+  override type T = TransducerTransition[In, Out, State]
 
   val start: State
   val fin: State
@@ -11,5 +11,5 @@ trait NFA[In, State] extends Graph [State] {
   def findTransitionByID(id: T#EdgeID): Option[T]
   def sourceFrom(s: State): Seq[T]
   def targetTo(s: State): Seq[T]
-  def accept(in: Seq[In]): Boolean
+  def run(in: Seq[In]): Set[Seq[Out]]
 }

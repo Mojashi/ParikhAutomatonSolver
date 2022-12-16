@@ -3,7 +3,7 @@ package solver
 
 
 trait ParikhAutomatonSolver[In, State, Label, Value] {
-  def solve(): Option[Map[Edge[State]#EdgeID, Value]]
+  def solve(): Option[Map[Edge[State]#EdgeID, Double]]
 
   val pa: ParikhAutomaton[In, State, Label, Value]
   def setObjective(minimize: Expression[Label, Value])

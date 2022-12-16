@@ -2,6 +2,8 @@ package xyz.mojashi
 package solver.mp
 
 import com.google.ortools.linearsolver.{MPConstraint, MPSolver, MPVariable}
+import xyz.mojashi.graph
+
 
 class MIPExactSolver[In, State, Label, Value: Numeric]
 (
@@ -47,7 +49,7 @@ class MIPExactSolver[In, State, Label, Value: Numeric]
     getConstraint(s"FLOW_CONSTRAINT{$state}")
   }
 
-  def rec(connected: Set[State], notConnected: Set[State]): Option[Map[EdgeID, Value]] = {
+  def rec(connected: Set[State], notConnected: Set[State]): Option[(Double, Map[EdgeID, Double])] = {
     assert(pa.voa.fin != notConnected)
     assert(pa.voa.fin != connected)
     assert(notConnected.intersect(connected).isEmpty)
@@ -76,53 +78,57 @@ class MIPExactSolver[In, State, Label, Value: Numeric]
       (t.id, getMPVariableForNumEdgeUsed(t.id).solutionValue())
     ).toMap
 
-    val connectedComponents = findConnectedComponent(pa.voa, numEdgeUsed)
+    val connectedComponents = graph.findConnectedComponent(pa.voa, numEdgeUsed)
 
-    val mainComponent = connectedComponents.find(pnfa.start)
-    if (!connected.forall(s => connectedComponents.find(s) == mainComponent)) {
-      println("dasaadsasd")
-      assert(false)
-    }
+    val mainComponent = connectedComponents.find(pa.voa.start)
     assert(connected.forall(s => connectedComponents.find(s) == mainComponent))
     assert(notConnected.forall(s => connectedComponents.rank(s) == 1))
-    val roots = connectedComponents.findRoots.diff(Set(mainComponent)).take(1)
+    val notConnectedRootOpt = connectedComponents.findRoots.diff(Set(mainComponent)).headOption
 
-    if (roots.size >= 1) {
+    if (notConnectedRootOpt.isDefined) {
+      val notConnectedRoot = notConnectedRootOpt.get
       var minObj = MPSolver.infinity()
-      var minObjEUC = Map[EdgeID, Double]()
-      for (r <- roots) {
-        val newAddNonCon = roots.diff(r)
-        val newAddCon = r
+      var minObjNEU = Map[EdgeID, Double]()
 
-        val tmp = rec(connected ++ newAddCon, notConnected ++ newAddNonCon)
+      for ((newConnected, newNotConnected) <- Seq((Set(notConnectedRoot), Set()), (Set(), Set(notConnectedRoot)))) {
+        val tmp = rec(connected ++ newConnected, notConnected ++ newNotConnected)
 
         if (tmp.isDefined) {
-          if (exactLowerBound) {
-            if (minObj > tmp.get._1) {
-              minObj = Math.min(minObj, tmp.get._1)
-              minObjEUC = tmp.get._2
-            }
-          } else return tmp
-        }
+          val (objV, neu) = tmp.get
+          if(isConstantObjective()) return tmp
+
+          if (minObj > objV) {
+            minObj = Math.min(minObj, objV)
+            minObjNEU = neu
+          }
+        } else return tmp
       }
-      if (!minObjEUC.isEmpty)
-        Some((minObj, minObjEUC))
+
+      if (minObj.isFinite)
+        Some((minObj, minObjNEU))
       else
         None
-    }
-    else {
-      println(s"obj: ${objectiveVal}")
-      Some(objectiveVal, edgeUseCount)
+    } else {
+      Some(objectiveVal, numEdgeUsed)
     }
   }
-  override def solve(): Option[Map[EdgeID, Value]] = {
-
+  override def solve(): Option[Map[EdgeID, Double]] = {
+    val ret = rec(Set(), Set())
+    ret.flatMap(r => Some(r._2))
   }
 
-  def solveInput(): Seq[In] = {
-
+  def solveInput(): Option[Seq[In]] = {
+    for {
+      neu <- solve()
+      (e,c) <- neu
+      (e,ci) <- Some((e, Math.round(c).toInt))
+      a <- Some((e,ci))
+    } yield a
+    solve().flatMap(neu => Some({
+      val ineu = neu.map { case (e, c) => (e, Math.round(c).toInt) }
+      graph.getEulerTrail(pa.voa, ineu).map(e=>e.id)
+    }))
   }
 
-
-  def findConnectedComponent[State](g: Graph[State], numEdgeUsed: Map[Edge[State]#EdgeID, Double]): UnionFind[State] = ???
 }
+

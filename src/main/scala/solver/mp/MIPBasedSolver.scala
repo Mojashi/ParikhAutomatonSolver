@@ -11,7 +11,7 @@ abstract class MIPBasedSolver[In, State, Label, Value: Numeric]
 ) extends ParikhAutomatonSolver[In, State, Label, Value] {
   type EdgeID = Edge[State]#EdgeID
 
-  val labels = pa.voa.transitions.flatMap(t => t.Out.keys).toSet
+  val labels = pa.voa.transitions.flatMap(t => t.out.keys).toSet
 
   val mpSolver = MPSolver.createSolver("SCIP")
   val m = implicitly[Numeric[Value]]
@@ -27,6 +27,13 @@ abstract class MIPBasedSolver[In, State, Label, Value: Numeric]
       obj.setCoefficient(getMPVariableForLabel(t), m.toDouble(coeff))
     }
     obj.setMinimization()
+  }
+
+  def isConstantObjective(): Boolean = {
+    objective match {
+      case Constant(_) => true
+      case _ => false
+    }
   }
 
   def getMPVariable(name: String, init: MPVariable=>Unit = _=>{}): MPVariable = {
@@ -105,11 +112,11 @@ abstract class MIPBasedSolver[In, State, Label, Value: Numeric]
       cons.setCoefficient(getMPVariableForLabel(label), -1)
 
       pa.voa.transitions.filter(t =>
-        m.gt(t.Out.getOrElse(label, m.zero), m.zero)
+        m.gt(t.out.getOrElse(label, m.zero), m.zero)
       ).foreach(t => {
         cons.setCoefficient(
           getMPVariableForNumEdgeUsed(t.id),
-          m.toDouble(t.Out.getOrElse(label, m.zero))
+          m.toDouble(t.out.getOrElse(label, m.zero))
         )
       })
 
