@@ -2,7 +2,10 @@ package xyz.mojashi
 package solver.mp
 
 import com.google.ortools.linearsolver.{MPConstraint, MPSolver, MPVariable}
+import com.typesafe.scalalogging.Logger
+import xyz.mojashi.automaton.ParikhAutomaton
 import xyz.mojashi.graph
+import xyz.mojashi.graph.EdgeID
 
 
 class MIPExactSolver[In, State, Label, Value: Numeric]
@@ -11,9 +14,9 @@ class MIPExactSolver[In, State, Label, Value: Numeric]
 )
   extends MIPBasedSolver[In, State, Label, Value](pa) {
 
-  override val IntegerNumEdgeUsed = true
+  override def IntegerNumEdgeUsed = true
 
-  override def initBaseConstraint: Seq[MPConstraint] = {
+  override def initBaseConstraint: Unit = {
     super.initBaseConstraint
     initConnectivityFlowConstraint
   }
@@ -37,6 +40,12 @@ class MIPExactSolver[In, State, Label, Value: Numeric]
 
       cons
     })
+
+    pa.voa.transitions.foreach(t => {
+      val cons = mpSolver.makeConstraint(0, MPSolver.infinity())
+      cons.setCoefficient(getMPVariableForNumEdgeUsed(t.id), 1)
+      cons.setCoefficient(getMPVariableForConnectivityFlow(t.id), -1)
+    })
   }
 
   def getMPVariableForConnectivityFlow(edgeID: EdgeID): MPVariable = {
@@ -50,13 +59,15 @@ class MIPExactSolver[In, State, Label, Value: Numeric]
   }
 
   def rec(connected: Set[State], notConnected: Set[State]): Option[(Double, Map[EdgeID, Double])] = {
+    Logger("rec").debug(s"rec: ${connected.size}")
+
     assert(pa.voa.fin != notConnected)
     assert(pa.voa.fin != connected)
     assert(notConnected.intersect(connected).isEmpty)
 
     pa.voa.states.foreach(v => {
       if (connected.contains(v))
-        getMPConstraintForConnectivityFlow(v).setLb(Math.min(0.01, 0.5 / connected.size))
+        getMPConstraintForConnectivityFlow(v).setLb(Math.min(0.1, 1.0 / connected.size))
       else if (v != pa.voa.start)
         getMPConstraintForConnectivityFlow(v).setLb(0)
     })
@@ -68,7 +79,7 @@ class MIPExactSolver[In, State, Label, Value: Numeric]
     })
 
     val result = mpSolver.solve()
-
+    Logger("result").debug(result.toString)
     if (result != MPSolver.ResultStatus.FEASIBLE && result != MPSolver.ResultStatus.OPTIMAL) {
       return None
     }
@@ -114,20 +125,20 @@ class MIPExactSolver[In, State, Label, Value: Numeric]
   }
   override def solve(): Option[Map[EdgeID, Double]] = {
     val ret = rec(Set(), Set())
+    println(ret)
     ret.flatMap(r => Some(r._2))
   }
 
   def solveInput(): Option[Seq[In]] = {
-    for {
-      neu <- solve()
-      (e,c) <- neu
-      (e,ci) <- Some((e, Math.round(c).toInt))
-      a <- Some((e,ci))
-    } yield a
-    solve().flatMap(neu => Some({
-      val ineu = neu.map { case (e, c) => (e, Math.round(c).toInt) }
-      graph.getEulerTrail(pa.voa, ineu).map(e=>e.id)
-    }))
+    solve().flatMap(neu => Some(
+      graph.getEulerTrail(
+        pa.voa,
+        neu.map{case (e,c) =>
+          (e, Math.round(c).toInt)
+        }).flatMap(t =>
+          pa.voa.findTransitionByID(t.id).get.in
+        )
+    ))
   }
 
 }

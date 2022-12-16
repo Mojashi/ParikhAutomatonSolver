@@ -13,6 +13,10 @@ libraryDependencies += "com.google.ortools" % "ortools-java" % "9.5.2237"
 libraryDependencies += "org.scalactic" %% "scalactic" % "3.2.14"
 libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.14" % "test"
 
+libraryDependencies += "dk.brics" % "automaton" % "1.12-4"
+
+libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.2.10"
+libraryDependencies += "com.typesafe.scala-logging" %% "scala-logging" % "3.9.4"
 
 lazy val root = (project in file("."))
   .settings(

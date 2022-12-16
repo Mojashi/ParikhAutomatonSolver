@@ -4,13 +4,13 @@ package solver.mp
 import solver.ParikhAutomatonSolver
 
 import com.google.ortools.linearsolver.{MPConstraint, MPSolver, MPVariable}
+import xyz.mojashi.automaton.ParikhAutomaton
+import xyz.mojashi.graph.{Edge, EdgeID}
 
 abstract class MIPBasedSolver[In, State, Label, Value: Numeric]
 (
   val pa: ParikhAutomaton[In, State, Label, Value]
 ) extends ParikhAutomatonSolver[In, State, Label, Value] {
-  type EdgeID = Edge[State]#EdgeID
-
   val labels = pa.voa.transitions.flatMap(t => t.out.keys).toSet
 
   val mpSolver = MPSolver.createSolver("SCIP")
@@ -60,7 +60,7 @@ abstract class MIPBasedSolver[In, State, Label, Value: Numeric]
   def getMPVariableForLabel(label: Label): MPVariable =
     getMPVariable(s"LABEL_VAR{$label}")
 
-  val IntegerNumEdgeUsed = false
+  def IntegerNumEdgeUsed = false
   def getMPVariableForNumEdgeUsed(edgeID: EdgeID) = {
     getMPVariable(s"NUM_EDGE_USED{$edgeID}", v=>{
       v.setInteger(IntegerNumEdgeUsed)
@@ -102,6 +102,11 @@ abstract class MIPBasedSolver[In, State, Label, Value: Numeric]
   def initBaseConstraint = {
     initCalcParikhImageConstraint
     initEulerConstraint
+    initPAConstraint
+  }
+
+  def initPAConstraint = {
+    pa.constraint.foreach(c => addConstraint(c))
   }
 
   def initCalcParikhImageConstraint = {

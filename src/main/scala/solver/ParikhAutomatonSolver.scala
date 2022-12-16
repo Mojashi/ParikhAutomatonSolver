@@ -1,9 +1,13 @@
 package xyz.mojashi
 package solver
 
+import automaton.ParikhAutomaton
+
+import xyz.mojashi.graph.{Edge, EdgeID}
+
 
 trait ParikhAutomatonSolver[In, State, Label, Value] {
-  def solve(): Option[Map[Edge[State]#EdgeID, Double]]
+  def solve(): Option[Map[EdgeID, Double]]
 
   val pa: ParikhAutomaton[In, State, Label, Value]
   def setObjective(minimize: Expression[Label, Value])

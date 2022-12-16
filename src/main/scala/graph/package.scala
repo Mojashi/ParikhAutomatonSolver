@@ -1,21 +1,25 @@
 package xyz.mojashi
 
-import xyz.mojashi.graph.UnionFind
+import xyz.mojashi.automaton.{NFA, Transition}
+import xyz.mojashi.graph.{EdgeID, UnionFind}
+
 import scala.collection.mutable
 
 package object graph {
-  def getEulerTrail[In, State]
+  type EdgeID = Int
+
+  def getEulerTrail[In, State, T <: Transition[Option[In], State]]
   (
-    g: NFA[In, State],
-    neu: Map[Edge[State]#EdgeID, Int]
+    g: NFA[In, State, T],
+    neu: Map[EdgeID, Int]
   ): Seq[Edge[State]] = {
-    val curNEU = mutable.Map.empty[Edge[State]#EdgeID, Int]
+    val curNEU = mutable.Map.empty[EdgeID, Int]
 
-    val trail = mutable.ListBuffer[Edge[State]#EdgeID]()
+    val trail = mutable.ListBuffer[EdgeID]()
 
-    def dfs(v: State, lastEdge: Option[Edge[State]#EdgeID]): Unit = {
+    def dfs(v: State, lastEdge: Option[EdgeID]): Unit = {
       for(e <- g.sourceFrom(v) if curNEU.getOrElse(e.id, 0) < neu.getOrElse(e.id, 0)) {
-        curNEU(e.id)+=1
+        curNEU(e.id) = curNEU.getOrElse(e.id, 0) + 1
         dfs(e.to, Some(e.id))
       }
 
@@ -24,16 +28,16 @@ package object graph {
 
     dfs(g.start, None)
 
-    for {
+    (for {
       t <- trail.toSeq
       e <- g.findTransitionByID(t)
-    } yield e
+    } yield e).reverse
   }
 
 
-  def findConnectedComponent[State]
+  def findConnectedComponent[State, T <: Edge[State]]
   (
-    g: Graph[State], numEdgeUsed: Map[Edge[State]#EdgeID, Double]
+    g: Graph[State, T], numEdgeUsed: Map[EdgeID, Double]
   ): UnionFind[State] = {
     val uf = new UnionFind[State]()
 
