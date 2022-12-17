@@ -2,6 +2,15 @@ ThisBuild / version := "0.1.0-SNAPSHOT"
 
 ThisBuild / scalaVersion := "2.13.10"
 
+
+githubOwner := "Mojashi"
+githubRepository := "ParikhAutomatonSolver"
+githubTokenSource := TokenSource.Or(
+  TokenSource.Environment("GITHUB_TOKEN"), // Injected during a github workflow for publishing
+  // workaround https://github.com/djspiewak/sbt-github-packages/issues/28
+  TokenSource.Environment("SHELL"),  // safe to assume this will be set in all our devs environments, usually /bin/bash, doesn't matter what it is to prevent local errors
+)
+
 libraryDependencies += {
   System.getProperty("os.name").toLowerCase match {
     case mac if mac.contains("mac")  => "com.google.ortools" % "ortools-darwin-aarch64" % "9.5.2237"
