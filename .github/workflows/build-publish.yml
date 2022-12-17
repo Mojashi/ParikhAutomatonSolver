@@ -2,6 +2,8 @@ name: CI
 on:
   push:
 jobs:
+  env:
+    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   build:
     runs-on: ubuntu-latest
     steps:
