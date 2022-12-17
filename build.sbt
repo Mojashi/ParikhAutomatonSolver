@@ -1,14 +1,14 @@
-ThisBuild / version := "0.1.0"
+ThisBuild / version := "0.1.1"
 
 ThisBuild / scalaVersion := "2.13.10"
 
-
-githubOwner := "Mojashi"
-githubRepository := "ParikhAutomatonSolver"
-githubTokenSource := TokenSource.Or(
-  TokenSource.Environment("GITHUB_TOKEN"), // Injected during a github workflow for publishing
-  // workaround https://github.com/djspiewak/sbt-github-packages/issues/28
-  TokenSource.Environment("SHELL"),  // safe to assume this will be set in all our devs environments, usually /bin/bash, doesn't matter what it is to prevent local errors
+publishTo := Some("GitHub Apache Maven Packages" at "https://maven.pkg.github.com/Mojashi/ParikhAutomatonSolver")
+publishMavenStyle := true
+credentials += Credentials(
+  "GitHub Package Registry",
+  "maven.pkg.github.com",
+  "Mojashi",
+  System.getenv("GITHUB_TOKEN")
 )
 
 libraryDependencies += {
