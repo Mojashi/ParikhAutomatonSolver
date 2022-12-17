@@ -9,5 +9,7 @@ jobs:
     steps:
       - uses: actions/checkout@v1
 +     - uses: olafurpg/setup-scala@v11
-      - run: sbt compile
-      - run: sbt publish
+      - name: Compile
+        run: sbt compile
+      - name: Publish
+        run: sbt publish
