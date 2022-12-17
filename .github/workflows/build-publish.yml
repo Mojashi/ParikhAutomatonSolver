@@ -1,6 +1,8 @@
 name: CI
 on:
   push:
+    tags:
+      - 'v*'
 jobs:
   build:
     env:
