@@ -1,4 +1,4 @@
-## Getting started
+## Installation
 - Add JitPack repository and dependency to your build.sbt
 ```
 resolvers += "jitpack" at "https://jitpack.io"
