@@ -7,11 +7,11 @@ import org.sosy_lab.java_smt.SolverContextFactory
 import org.sosy_lab.java_smt.SolverContextFactory.Solvers
 import org.sosy_lab.java_smt.api.SolverContext.ProverOptions
 
+import scala.util.Using
+
 class JavaSMTTest extends org.scalatest.funsuite.AnyFunSuiteLike {
 
   test("solve") {
-    // Instantiate JavaSMT with SMTInterpol as backend (for dependencies cf. documentation)// Instantiate JavaSMT with SMTInterpol as backend (for dependencies cf. documentation)
-
     val config = Configuration.defaultConfiguration()
     val logger = BasicLogManager.create(config)
     val shutdown = ShutdownManager.create
@@ -19,30 +19,33 @@ class JavaSMTTest extends org.scalatest.funsuite.AnyFunSuiteLike {
     // SolverContext is a class wrapping a solver context.
     // Solver can be selected either using an argument or a configuration option
     // inside `config`.
-    try {
-      val context = SolverContextFactory.createSolverContext(config, logger, shutdown.getNotifier, Solvers.Z3)
-      try {
-        val imgr = context.getFormulaManager.getIntegerFormulaManager
-        // Create formula "a = b" with two integer variables
-        val a = imgr.makeVariable("a")
-        val b = imgr.makeVariable("b")
-        val g = imgr.greaterThan(a,b)
-        // Solve formula, get model, and print variable assignment
-        try {
-          val prover = context.newProverEnvironment(ProverOptions.GENERATE_MODELS)
-          try {
-//            prover.addConstraint(f)
-            prover.addConstraint(g)
-            val isUnsat = prover.isUnsat
-            assert(!isUnsat)
-            try {
-              val model = prover.getModel
-              try System.out.printf("SAT with a = %s, b = %s", model.evaluate(a), model.evaluate(b))
-              finally if (model != null) model.close()
-            }
-          } finally if (prover != null) prover.close()
+    Using(SolverContextFactory.createSolverContext(config, logger, shutdown.getNotifier, Solvers.Z3)) { context =>
+      val imgr = context.getFormulaManager.getIntegerFormulaManager
+      // Create formula "a = b" with two integer variables
+      val a = imgr.makeVariable("a")
+      val b = imgr.makeVariable("b")
+      val g = imgr.greaterThan(a, b)
+      val h = imgr.equal(b, imgr.makeNumber(2))
+      // Solve formula, get model, and print variable assignment
+        Using(context.newProverEnvironment(ProverOptions.GENERATE_MODELS)) { prover =>
+          //            prover.addConstraint(f)
+          prover.addConstraint(g)
+          prover.addConstraint(imgr.equal(a, b))
+          val isUnsat = prover.isUnsat
+          //            assert(!isUnsat)
+
+          println(prover.getModel)
+          Using(prover.getModel) { model =>
+            System.out.printf("SAT with a = %s, b = %s", model.evaluate(a), model.evaluate(b))
+          }
+
+          prover.addConstraint(h)
+          val isUnsat2 = prover.isUnsat
+          assert(!isUnsat2)
+          Using(prover.getModel) { model =>
+            System.out.printf("SAT with a = %s, b = %s", model.evaluate(a), model.evaluate(b))
+          }
         }
-      } finally if (context != null) context.close()
     }
   }
 }

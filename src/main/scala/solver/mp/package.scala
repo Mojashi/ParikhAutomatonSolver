@@ -4,6 +4,7 @@ package solver
 import utils.{addVector, mulVector, subVector}
 
 import xyz.mojashi.automaton.{NFA, Transition}
+import xyz.mojashi.formula.{Add, Constant, Expression, Sub, Times, Var}
 import xyz.mojashi.graph.{Edge, EdgeID}
 
 package object mp {
@@ -37,3 +38,5 @@ package object mp {
   }
 
 }
+
+object MPSolvers {}

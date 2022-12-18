@@ -6,11 +6,12 @@ import graph.EdgeID
 
 import com.google.ortools.linearsolver.MPSolver
 import com.typesafe.scalalogging.Logger
+import xyz.mojashi.solver.algorithm.NumericCast
 
 class LPRelaxedSolver[In, State, Label, Value: Numeric]
 (
   pa: ParikhAutomaton[In, State, Label, Value]
-)
+)(implicit cast: NumericCast[Value, Double])
   extends MIPBasedSolver[In, State, Label, Value](pa, true) {
   override def solve(): Option[Map[EdgeID, Double]] = {
     val result = mpSolver.solve()
@@ -22,7 +23,7 @@ class LPRelaxedSolver[In, State, Label, Value: Numeric]
     val objectiveVal = mpSolver.objective().value()
     Logger("objective").info(s"objectiveVal: $objectiveVal")
     val numEdgeUsed: Map[EdgeID, Double] = pa.voa.transitions.map(t =>
-      (t.id, getMPVariableForNumEdgeUsed(t.id).solutionValue())
+      (t.id, getInnerVariableForNumEdgeUsed(t.id).v.solutionValue())
     ).toMap
 
     Some(numEdgeUsed)
