@@ -35,18 +35,3 @@ lazy val root = (project in file("."))
     name := "ParikhAutomatonSolver",
     idePackagePrefix := Some("xyz.mojashi")
   )
-
-
-
-import ReleaseTransformations._
-releaseProcess := Seq[ReleaseStep](
-  checkSnapshotDependencies,
-  inquireVersions,
-  runClean,
-  runTest,
-  setReleaseVersion,
-  commitReleaseVersion,
-  tagRelease,
-  setNextVersion,
-  commitNextVersion,
-)
