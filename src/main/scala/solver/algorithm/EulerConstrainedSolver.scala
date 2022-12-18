@@ -11,7 +11,7 @@ trait EulerConstrainedSolver[In, State, Label, Value, InnerValue] extends BaseSo
 
   def initEulerConstraint(implicit m: Numeric[InnerValue]) = {
     pa.voa.states.map(s => {
-      addInnerConstraint(convPredicate(
+      addInnerAtomConstraint(
         EQ(
           pa.voa.sourceFrom(s)
             .map(t => Var[InnerVarName, InnerValue](getInnerVariableForNumEdgeUsed(t.id).name))
@@ -29,7 +29,7 @@ trait EulerConstrainedSolver[In, State, Label, Value, InnerValue] extends BaseSo
             }
           ),
         )
-      ))
+      )
     })
   }
 }

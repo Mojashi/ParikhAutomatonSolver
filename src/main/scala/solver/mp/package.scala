@@ -38,3 +38,5 @@ package object mp {
   }
 
 }
+
+object MPSolvers {}

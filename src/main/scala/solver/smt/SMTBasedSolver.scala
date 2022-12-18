@@ -56,12 +56,15 @@ abstract class SMTBasedSolver[In, State, Label]
     throw new Exception("You cannot set objective with SMT")
   }
 
-  override def addInnerConstraint(constraint: InnerConstraint) = {
+  def addInnerConstraint(constraint: InnerConstraint) = {
     prover.addConstraint(constraint)
   }
 
+  override def addInnerConstraint(p: Predicate[InnerVarName, Int]) = {
+    addInnerConstraint(convPredicate(p))
+  }
 
-  override def convPredicate[L](p: Predicate[L, Int]): BooleanFormula = {
+  def convPredicate[L](p: Predicate[L, Int]): BooleanFormula = {
     p match {
       case GTEQ(left, right) => imgr.greaterOrEquals(convExpr(left), convExpr(right))
       case LTEQ(left, right) => imgr.lessOrEquals(convExpr(left), convExpr(right))
@@ -70,7 +73,8 @@ abstract class SMTBasedSolver[In, State, Label]
       case Or(ps) => bmgr.or(ps.map(p=>convPredicate(p)).asJavaCollection)
     }
   }
-  override def convExpr[L](e: Expression[L, Int]): NumeralFormula.IntegerFormula = {
+
+  def convExpr[L](e: Expression[L, Int]): NumeralFormula.IntegerFormula = {
     e match {
       case Add(left, right) => imgr.add(convExpr(left), convExpr(right))
       case Sub(left, right) => imgr.subtract(convExpr(left), convExpr(right))
@@ -89,8 +93,18 @@ abstract class SMTBasedSolver[In, State, Label]
     prover.close()
   }
 
+
+  override def addConstraint(constraint: Predicate[Label, Int], constraintID: String): String = {
+    addInnerConstraint(convParikhPredicateToInner(constraint))
+    constraintID
+  }
+
   constraintNumEdgeUsedIsPositive
   initEulerConstraint
   constraintPAConstraint
   initCalcParikhImageConstraint
+
+  override def addInnerAtomConstraint(p: AtomPredicate[InnerVarName, Int]) = {
+    addInnerConstraint(p)
+  }
 }

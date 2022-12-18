@@ -9,7 +9,7 @@ trait CalcParikhConstrainedSolver[In, State, Label, Value, InnerValue] extends B
 
   def initCalcParikhImageConstraint(implicit m: Numeric[InnerValue],  m2: Numeric[Value], c: NumericCast[Value, InnerValue]): Unit = {
     labels.toSeq.foreach(label => {
-      addInnerConstraint(convPredicate(
+      addInnerAtomConstraint(
         EQ(
           Var[InnerVarName, InnerValue](getInnerVariableForLabel(label).name),
           pa.voa.transitions.filter(t =>
@@ -21,7 +21,7 @@ trait CalcParikhConstrainedSolver[In, State, Label, Value, InnerValue] extends B
             )
           ).fold(Constant[InnerVarName, InnerValue](m.zero))((sum, t)=>Add(sum, t))
         )
-      ))
+      )
     })
   }
 }

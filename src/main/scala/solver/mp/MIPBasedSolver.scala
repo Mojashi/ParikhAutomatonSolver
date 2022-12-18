@@ -1,23 +1,44 @@
 package xyz.mojashi
 package solver.mp
 
-import solver.ParikhAutomatonSolver
+import solver.{BaseSolver, ParikhAutomatonSolver}
 
 import com.google.ortools.linearsolver.{MPConstraint, MPSolver, MPVariable}
 import com.typesafe.scalalogging.Logger
 import xyz.mojashi.automaton.ParikhAutomaton
 import xyz.mojashi.formula.{And, AtomPredicate, Constant, EQ, Expression, GTEQ, LTEQ, Or, Predicate, Sub}
 import xyz.mojashi.graph.{Edge, EdgeID}
+import xyz.mojashi.solver.algorithm.Implicits.IntIntNumericCast
+import xyz.mojashi.solver.algorithm.{CalcParikhConstrainedSolver, EulerConstrainedSolver, NumericCast}
+
+case class ExplicitMPConstraint
+(
+  v: Map[String, Double],
+  range: (Double, Double)
+)
 
 abstract class MIPBasedSolver[In, State, Label, Value: Numeric]
 (
   val pa: ParikhAutomaton[In, State, Label, Value],
   val lpRelaxed:Boolean = false,
   val ensureConnectivity: Boolean = true,
-) extends ParikhAutomatonSolver[In, State, Label, Value] {
-  val labels = pa.voa.transitions.flatMap(t => t.out.keys).toSet
+  val underlyingSolver: ORToolsMIPSolver = ORToolsMIPSolver.SCIP,
+) (implicit cast: NumericCast[Value, Double])
+  extends BaseSolver[In, State, Label, Value, Double]
+    with ParikhAutomatonSolver[In, State, Label, Value]
+    with EulerConstrainedSolver[In, State, Label, Value, Double]
+    with CalcParikhConstrainedSolver[In, State, Label, Value, Double] {
 
-  val mpSolver = MPSolver.createSolver(if(lpRelaxed) "CLP" else "SCIP")
+  override type InnerExpr = Map[String, Double]
+  override type InnerVar = MPVariable
+  override type InnerConstraint = ExplicitMPConstraint
+
+
+  if(!lpRelaxed && !underlyingSolver.supportInt) {
+    throw new RuntimeException(s"${underlyingSolver.name} doesn't support integer variables. Try another solver or set lpRelaxed = true.")
+  }
+  val mpSolver = MPSolver.createSolver(underlyingSolver.name)
+
   val m = implicitly[Numeric[Value]]
 
   val objective = Constant(0)
@@ -28,7 +49,7 @@ abstract class MIPBasedSolver[In, State, Label, Value: Numeric]
     obj.clear()
 
     for ((t, coeff) <- coeffs) {
-      obj.setCoefficient(getMPVariableForLabel(t), m.toDouble(coeff))
+      obj.setCoefficient(getInnerVariableForLabel(t).v, m.toDouble(coeff))
     }
     obj.setMinimization()
   }
@@ -40,14 +61,18 @@ abstract class MIPBasedSolver[In, State, Label, Value: Numeric]
     }
   }
 
-  def getMPVariable(name: String, init: MPVariable=>Unit = _=>{}): MPVariable = {
+  override def getInnerVariable(name: InnerVarName): InnerVarWithName = {
     val ret = mpSolver.lookupVariableOrNull(name)
     if(ret == null) {
-      val newV = mpSolver.makeVar(-MPSolver.infinity(), MPSolver.infinity(), false, name)
-      init(newV)
-      newV
+      InnerVarWithName(
+        name=name,
+        v=mpSolver.makeVar(-MPSolver.infinity(), MPSolver.infinity(), false, name)
+      )
     } else {
-      ret
+      InnerVarWithName(
+        name=name,
+        v=ret,
+      )
     }
   }
 
@@ -60,50 +85,46 @@ abstract class MIPBasedSolver[In, State, Label, Value: Numeric]
     }
   }
 
+  def convAtomPredicate(p: AtomPredicate[InnerVarName, Double]): ExplicitMPConstraint = {
+    val (range, left, right): ((Double,Double), Expression[InnerVarName, Double],Expression[InnerVarName, Double]) = p match {
+      case EQ(left, right) => ((0, 0), left, right)
+      case LTEQ(left, right) => ((-MPSolver.infinity(), 0), left, right)
+      case GTEQ(left, right) => ((0, MPSolver.infinity()), left, right)
+    }
 
-  def getMPVariableForLabel(label: Label): MPVariable =
-    getMPVariable(s"LABEL_VAR{$label}")
+    val (coeffs, c) = getCoefficients(Sub(left, right))
 
-  def getMPVariableForNumEdgeUsed(edgeID: EdgeID) = {
-    getMPVariable(s"NUM_EDGE_USED{$edgeID}", v=>{
-      v.setInteger(!lpRelaxed)
-      v.setLb(0)
-    })
+    val newRange = (range._1 - c, range._2 - c)
+
+    ExplicitMPConstraint(
+      v = coeffs.map { case (name, v) => (name, v) },
+      range = newRange,
+    )
   }
 
   override def addConstraint(constraint: Predicate[Label, Value], constraintID: ConstraintID = ""): ConstraintID = {
     if(constraintID != "") {
       Logger("MIPBasedSolver").warn(s"ConstraintID was specified as $constraintID but is ignored")
     }
-    constraint match {
-      case Or(_) =>
-        throw new NotImplementedError("MIP Solver cannot handle 'OR'")
-
-      case And(ps) => ps.foreach(p=>addConstraint(p))
-      case atomP: AtomPredicate[Label, Value] => addAtomPredicateConstraint(atomP)
-    }
+    addInnerConstraint(convParikhPredicateToInner(constraint))
     ""
   }
 
+  def addInnerConstraint(cons: InnerConstraint): ConstraintID = {
+    val act = mpSolver.makeConstraint()
+    cons.v.foreach{case (key, v) =>
+      act.setCoefficient(getInnerVariable(key).v, v)
+    }
+    act.setBounds(cons.range._1, cons.range._2)
+    act.name()
+  }
+
   override def addAtomPredicateConstraint (constraint: AtomPredicate[Label, Value], constraintID: ConstraintID): ConstraintID = {
-    val (cons,left,right) = constraint match {
-      case EQ(left, right) => (mpSolver.makeConstraint(0, 0, constraintID), left, right)
-      case LTEQ(left, right) => (mpSolver.makeConstraint(-MPSolver.infinity(), 0, constraintID), left, right)
-      case GTEQ(left, right) => (mpSolver.makeConstraint(0, MPSolver.infinity(), constraintID) , left, right)
-    }
+    addInnerAtomConstraint(convParikhAtomPredicateToInner(constraint))
+  }
 
-    val (coeffs, c) = getCoefficients(Sub(left, right))
-
-    cons.setBounds(cons.lb() - m.toDouble(c), cons.ub() - m.toDouble(c))
-
-    for ((t, coeff) <- coeffs) {
-      cons.setCoefficient(getMPVariableForLabel(t), m.toDouble(coeff))
-    }
-
-    if(constraintID == "")
-      cons.name()
-    else
-      constraintID
+  override def addInnerAtomConstraint(p: AtomPredicate[InnerVarName, Double]): ConstraintID = {
+    addInnerConstraint(convAtomPredicate(p))
   }
 
   override def removeConstraint(constraintID: ConstraintID): Unit = {
@@ -114,53 +135,18 @@ abstract class MIPBasedSolver[In, State, Label, Value: Numeric]
     cons.delete()
   }
 
-  initCalcParikhImageConstraint
+  override def addInnerConstraint(p: Predicate[InnerVarName, Double]): Unit = {
+    p match {
+      case Or(_) =>
+        throw new NotImplementedError("MIP Solver cannot handle 'OR'")
+
+      case And(ps) => ps.foreach(p => addInnerConstraint(p))
+      case atomP: AtomPredicate[InnerVarName, Double] => addInnerAtomConstraint(atomP)
+    }
+  }
+
   initEulerConstraint
-  initPAConstraint
-
-  def initPAConstraint = {
-    addConstraint(pa.constraint)
-  }
-
-  def initCalcParikhImageConstraint = {
-    labels.toSeq.map(label => {
-      val cons = getConstraint(s"CALC_PARIKH_CONSTRAINT{$label}")
-
-      cons.setBounds(0, 0)
-      cons.setCoefficient(getMPVariableForLabel(label), -1)
-
-      pa.voa.transitions.filter(t =>
-        m.gt(t.out.getOrElse(label, m.zero), m.zero)
-      ).foreach(t => {
-        cons.setCoefficient(
-          getMPVariableForNumEdgeUsed(t.id),
-          m.toDouble(t.out.getOrElse(label, m.zero))
-        )
-      })
-
-      cons
-    })
-  }
-
-  def initEulerConstraint = {
-    pa.voa.states.map(s => {
-      val cons = getConstraint(s"EULER_CONSTRAINT{$s}")
-
-      s match {
-        case pa.voa.start => cons.setBounds(-1, -1)
-        case pa.voa.fin => cons.setBounds(1, 1)
-        case _ => cons.setBounds(0, 0)
-      }
-
-      pa.voa.sourceFrom(s).foreach(t =>
-        cons.setCoefficient(getMPVariableForNumEdgeUsed(t.id), -1)
-      )
-      pa.voa.targetTo(s).foreach(t => {
-        val v = getMPVariableForNumEdgeUsed(t.id)
-        cons.setCoefficient(v, cons.getCoefficient(v) + 1)
-      })
-
-      cons
-    })
-  }
+  initCalcParikhImageConstraint
+  constraintPAConstraint
+  constraintNumEdgeUsedIsPositive
 }

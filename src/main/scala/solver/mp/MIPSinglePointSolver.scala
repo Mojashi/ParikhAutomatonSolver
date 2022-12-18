@@ -7,16 +7,16 @@ import xyz.mojashi.automaton.ParikhAutomaton
 import xyz.mojashi.formula.Predicate
 import xyz.mojashi.graph
 import xyz.mojashi.graph.EdgeID
+import xyz.mojashi.solver.algorithm.NumericCast
 
 class MIPSinglePointSolver[In, State, Label, Value: Numeric]
 (
   pa: ParikhAutomaton[In, State, Label, Value],
   lpRelaxed: Boolean = false,
   ensureOptimumObjective: Boolean = true,
-)
+)(implicit cast: NumericCast[Value, Double])
   extends MIPBasedSolver[In, State, Label, Value](pa, lpRelaxed) {
 
-  initConnectivityFlowConstraint
 
   def initConnectivityFlowConstraint = {
     pa.voa.states.map(s => {
@@ -28,10 +28,10 @@ class MIPSinglePointSolver[In, State, Label, Value: Numeric]
       }
 
       pa.voa.sourceFrom(s).foreach(t =>
-        cons.setCoefficient(getMPVariableForConnectivityFlow(t.id), -1)
+        cons.setCoefficient(getMPVariableForConnectivityFlow(t.id).v, -1)
       )
       pa.voa.targetTo(s).foreach(t => {
-        val v = getMPVariableForConnectivityFlow(t.id)
+        val v = getMPVariableForConnectivityFlow(t.id).v
         cons.setCoefficient(v, cons.getCoefficient(v) + 1)
       })
 
@@ -40,17 +40,22 @@ class MIPSinglePointSolver[In, State, Label, Value: Numeric]
 
     pa.voa.transitions.foreach(t => {
       val cons = mpSolver.makeConstraint(0, MPSolver.infinity())
-      cons.setCoefficient(getMPVariableForNumEdgeUsed(t.id), 1)
-      cons.setCoefficient(getMPVariableForConnectivityFlow(t.id), -1)
+      cons.setCoefficient(getInnerVariableForNumEdgeUsed(t.id).v, 1)
+      cons.setCoefficient(getMPVariableForConnectivityFlow(t.id).v, -1)
     })
   }
 
-  def getMPVariableForConnectivityFlow(edgeID: EdgeID): MPVariable = {
-    getMPVariable(s"CONNECTIVITY_FLOW{$edgeID}", v => {
-      v.setInteger(false)
-      v.setLb(0)
-    })
+  def getMPVariableForConnectivityFlow(edgeID: EdgeID): InnerVarWithName = {
+    getInnerVariable(s"CONNECTIVITY_FLOW{$edgeID}")
   }
+  def constraintConnectivityFlowIsPositive = {
+    pa.voa.transitions.map(v=>getMPVariableForConnectivityFlow(v.id).v).foreach(v => {
+        v.setInteger(false)
+        v.setLb(0)
+      }
+    )
+  }
+
   def getMPConstraintForConnectivityFlow(state: State): MPConstraint = {
     getConstraint(s"FLOW_CONSTRAINT{$state}")
   }
@@ -70,9 +75,9 @@ class MIPSinglePointSolver[In, State, Label, Value: Numeric]
     })
     pa.voa.transitions.foreach(e => {
       if (notConnected.contains(e.to) || notConnected.contains(e.from))
-        getMPVariableForNumEdgeUsed(e.id).setUb(0)
+        getInnerVariableForNumEdgeUsed(e.id).v.setUb(0)
       else
-        getMPVariableForNumEdgeUsed(e.id).setUb(MPSolver.infinity())
+        getInnerVariableForNumEdgeUsed(e.id).v.setUb(MPSolver.infinity())
     })
 
     val result = mpSolver.solve()
@@ -83,7 +88,7 @@ class MIPSinglePointSolver[In, State, Label, Value: Numeric]
 
     val objectiveVal = mpSolver.objective().value()
     val numEdgeUsed: Map[EdgeID, Double] = pa.voa.transitions.map(t =>
-      (t.id, getMPVariableForNumEdgeUsed(t.id).solutionValue())
+      (t.id, getInnerVariableForNumEdgeUsed(t.id).v.solutionValue())
     ).toMap
 
     val connectedComponents = graph.findConnectedComponent(pa.voa, numEdgeUsed)
@@ -126,5 +131,9 @@ class MIPSinglePointSolver[In, State, Label, Value: Numeric]
     println(ret)
     ret.flatMap(r => Some(r._2))
   }
+
+
+  initConnectivityFlowConstraint
+  constraintConnectivityFlowIsPositive
 }
 

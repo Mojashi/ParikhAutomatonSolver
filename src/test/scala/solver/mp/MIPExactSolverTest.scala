@@ -8,6 +8,7 @@ import xyz.mojashi.automaton.impl.BricsNFAAdapter.BricsNFAAdapter
 import xyz.mojashi.automaton.impl.ToParikhVectorTransducer.NFA_Parikh
 import xyz.mojashi.formula.{And, Constant, EQ, GTEQ, Sub, Times, Var}
 import xyz.mojashi.solver.ParikhAutomatonSolver
+import xyz.mojashi.solver.algorithm.Implicits.IntDoubleNumericCast
 import xyz.mojashi.solver.smt.SMTConventionalExactSolver
 import xyz.mojashi.utils.{NFAToDot, showDotInBrowser}
 

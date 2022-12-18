@@ -1,7 +1,7 @@
 package xyz.mojashi
 package solver
 
-import formula.{Add, And, Constant, EQ, Expression, GTEQ, LTEQ, Or, Predicate, Sub, Times, Var}
+import formula.{Add, And, AtomPredicate, Constant, EQ, Expression, GTEQ, LTEQ, Or, Predicate, Sub, Times, Var}
 import graph.EdgeID
 
 import xyz.mojashi.automaton.ParikhAutomaton
@@ -25,39 +25,44 @@ abstract class BaseSolver[In, State, Label, Value: Numeric, InnerValue: Numeric]
   )
   def getInnerVariable(name: InnerVarName): InnerVarWithName
 
-  def convPredicate[L](p: Predicate[L, InnerValue]): InnerConstraint
+  def addInnerConstraint(p: Predicate[InnerVarName, InnerValue])
 
-  def convExpr[L](e: Expression[L, InnerValue]): InnerExpr
+  def addInnerAtomConstraint(p: AtomPredicate[InnerVarName, InnerValue]): Any
+
 
   def getInnerVariableForNumEdgeUsed(edgeID: EdgeID): InnerVarWithName = {
     getInnerVariable(s"NUM_EDGE_USED{$edgeID}")
   }
   def constraintNumEdgeUsedIsPositive = {
-    pa.voa.transitions.foreach(t => addInnerConstraint(convPredicate(
+    pa.voa.transitions.foreach(t => addInnerAtomConstraint(
       GTEQ[InnerVarName,InnerValue](
         Var[InnerVarName,InnerValue](getInnerVariableForNumEdgeUsed(t.id).name),
         Constant[InnerVarName,InnerValue](innerM.zero)
       )(innerM)
-    )))
+    ))
   }
 
   def constraintPAConstraint= {
-    addInnerConstraint(convPredicate(convParikhPredicateToInner(pa.constraint)))
+    addInnerConstraint(convParikhPredicateToInner(pa.constraint))
   }
 
   def getInnerVariableForLabel(label: Label): InnerVarWithName = {
     getInnerVariable(s"LABEL{$label}")
   }
-  def addInnerConstraint(cons: InnerConstraint)
-
 
   def convParikhPredicateToInner(p: Predicate[Label, Value]): Predicate[InnerVarName, InnerValue] = {
     p match {
       case And(ps) => And[InnerVarName,InnerValue](ps.map(convParikhPredicateToInner))
       case Or(ps) => And[InnerVarName,InnerValue](ps.map(convParikhPredicateToInner))
-      case GTEQ(left, right) => GTEQ[InnerVarName,InnerValue](convParikhExprToInner(left), convParikhExprToInner(right))(innerM)
-      case LTEQ(left, right) => LTEQ[InnerVarName,InnerValue](convParikhExprToInner(left), convParikhExprToInner(right))(innerM)
-      case EQ(left, right) => EQ[InnerVarName,InnerValue](convParikhExprToInner(left), convParikhExprToInner(right))(innerM)
+      case p: AtomPredicate[Label,Value] => convParikhAtomPredicateToInner(p)
+    }
+  }
+
+  def convParikhAtomPredicateToInner(p: AtomPredicate[Label, Value]): AtomPredicate[InnerVarName, InnerValue] = {
+    p match {
+      case GTEQ(left, right) => GTEQ[InnerVarName, InnerValue](convParikhExprToInner(left), convParikhExprToInner(right))(innerM)
+      case LTEQ(left, right) => LTEQ[InnerVarName, InnerValue](convParikhExprToInner(left), convParikhExprToInner(right))(innerM)
+      case EQ(left, right) => EQ[InnerVarName, InnerValue](convParikhExprToInner(left), convParikhExprToInner(right))(innerM)
     }
   }
 
@@ -71,8 +76,4 @@ abstract class BaseSolver[In, State, Label, Value: Numeric, InnerValue: Numeric]
     }
   }
 
-  def addConstraint(constraint: Predicate[Label, Value], constraintID: String): String = {
-    addInnerConstraint(convPredicate(convParikhPredicateToInner(constraint)))
-    constraintID
-  }
 }
