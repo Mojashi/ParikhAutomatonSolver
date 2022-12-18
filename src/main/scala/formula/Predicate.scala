@@ -1,6 +1,20 @@
 package xyz.mojashi
+package formula
 
-trait AtomPredicate[Variable, Value] {
+sealed trait Predicate[Variable, Value] {
+  def eval(assigns: Map[Variable, Value]): Boolean
+}
+
+case class Or[Variable, Value](ps: Seq[Predicate[Variable, Value]]) extends Predicate[Variable,Value] {
+  override def eval(assigns: Map[Variable, Value]): Boolean = ps.exists(t => t.eval(assigns))
+}
+
+case class And[Variable, Value](ps: Seq[Predicate[Variable, Value]]) extends Predicate[Variable,Value] {
+  override def eval(assigns: Map[Variable, Value]): Boolean = ps.forall(t => t.eval(assigns))
+}
+
+
+sealed trait AtomPredicate[Variable, Value] extends Predicate[Variable, Value] {
   def eval(assigns: Map[Variable, Value]): Boolean
 }
 
@@ -10,7 +24,7 @@ case class EQ[Variable, Value: Numeric]
   right: Expression[Variable, Value],
 ) extends AtomPredicate[Variable, Value] {
   def eval(assigns: Map[Variable, Value]): Boolean =
-    implicitly[Numeric[Value]].eq(left.eval(assigns), right.eval(assigns))
+    implicitly[Numeric[Value]].equiv(left.eval(assigns), right.eval(assigns))
 }
 
 case class GTEQ[Variable, Value: Numeric]

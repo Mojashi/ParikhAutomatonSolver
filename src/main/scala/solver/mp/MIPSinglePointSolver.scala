@@ -4,6 +4,7 @@ package solver.mp
 import com.google.ortools.linearsolver.{MPConstraint, MPSolver, MPVariable}
 import com.typesafe.scalalogging.Logger
 import xyz.mojashi.automaton.ParikhAutomaton
+import xyz.mojashi.formula.Predicate
 import xyz.mojashi.graph
 import xyz.mojashi.graph.EdgeID
 
@@ -15,10 +16,7 @@ class MIPSinglePointSolver[In, State, Label, Value: Numeric]
 )
   extends MIPBasedSolver[In, State, Label, Value](pa, lpRelaxed) {
 
-  override def initBaseConstraint: Unit = {
-    super.initBaseConstraint
-    initConnectivityFlowConstraint
-  }
+  initConnectivityFlowConstraint
 
   def initConnectivityFlowConstraint = {
     pa.voa.states.map(s => {

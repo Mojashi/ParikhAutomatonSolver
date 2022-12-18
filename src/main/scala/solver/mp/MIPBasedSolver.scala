@@ -4,7 +4,9 @@ package solver.mp
 import solver.ParikhAutomatonSolver
 
 import com.google.ortools.linearsolver.{MPConstraint, MPSolver, MPVariable}
+import com.typesafe.scalalogging.Logger
 import xyz.mojashi.automaton.ParikhAutomaton
+import xyz.mojashi.formula.{And, AtomPredicate, Constant, EQ, Expression, GTEQ, LTEQ, Or, Predicate, Sub}
 import xyz.mojashi.graph.{Edge, EdgeID}
 
 abstract class MIPBasedSolver[In, State, Label, Value: Numeric]
@@ -69,7 +71,21 @@ abstract class MIPBasedSolver[In, State, Label, Value: Numeric]
     })
   }
 
-  override def addConstraint(constraint: AtomPredicate[Label, Value], constraintID: ConstraintID): ConstraintID = {
+  override def addConstraint(constraint: Predicate[Label, Value], constraintID: ConstraintID = ""): ConstraintID = {
+    if(constraintID != "") {
+      Logger("MIPBasedSolver").warn(s"ConstraintID was specified as $constraintID but is ignored")
+    }
+    constraint match {
+      case Or(_) =>
+        throw new NotImplementedError("MIP Solver cannot handle 'OR'")
+
+      case And(ps) => ps.foreach(p=>addConstraint(p))
+      case atomP: AtomPredicate[Label, Value] => addAtomPredicateConstraint(atomP)
+    }
+    ""
+  }
+
+  override def addAtomPredicateConstraint (constraint: AtomPredicate[Label, Value], constraintID: ConstraintID): ConstraintID = {
     val (cons,left,right) = constraint match {
       case EQ(left, right) => (mpSolver.makeConstraint(0, 0, constraintID), left, right)
       case LTEQ(left, right) => (mpSolver.makeConstraint(-MPSolver.infinity(), 0, constraintID), left, right)
@@ -98,16 +114,12 @@ abstract class MIPBasedSolver[In, State, Label, Value: Numeric]
     cons.delete()
   }
 
-  initBaseConstraint
-
-  def initBaseConstraint = {
-    initCalcParikhImageConstraint
-    initEulerConstraint
-    initPAConstraint
-  }
+  initCalcParikhImageConstraint
+  initEulerConstraint
+  initPAConstraint
 
   def initPAConstraint = {
-    pa.constraint.foreach(c => addConstraint(c))
+    addConstraint(pa.constraint)
   }
 
   def initCalcParikhImageConstraint = {

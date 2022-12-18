@@ -1,6 +1,7 @@
 package xyz.mojashi
+package formula
 
-trait Expression[Variable, Value] {
+sealed trait Expression[Variable, Value] {
   def eval(assigns: Map[Variable, Value]): Value
 }
 
