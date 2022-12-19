@@ -1,22 +1,22 @@
 package com.github.Mojashi
 package graph
 
-trait Edge[State] {
-  val from: State
-  val to: State
+trait Edge {
+  val from: StateID
+  val to: StateID
   val id: EdgeID
 }
 
-case class EdgeImpl[State](
-  from: State,
-  to: State,
+case class EdgeImpl(
+  from: StateID,
+  to: StateID,
   id: EdgeID
-) extends Edge[State]()
+) extends Edge
 
 object UniqueEdgeId {
   var id = 0
-  def get() = {
+  def get(): EdgeID = {
     id += 1
-    id
+    id.toString
   }
 }

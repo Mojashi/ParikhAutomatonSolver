@@ -1,11 +1,11 @@
 package com.github.Mojashi
 package graph
 
-trait Graph[State, +E <: Edge[State]] {
+trait Graph[+E <: Edge] {
   def transitions: Seq[E]
-  val states: Seq[State]
+  val states: Seq[StateID]
 
   def findTransitionByID(id: EdgeID): Option[E]
-  def sourceFrom(s: State): Seq[E]
-  def targetTo(s: State): Seq[E]
+  def sourceFrom(s: StateID): Seq[E]
+  def targetTo(s: StateID): Seq[E]
 }

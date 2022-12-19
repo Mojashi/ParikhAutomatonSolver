@@ -5,7 +5,7 @@ import solver.BaseSolver
 
 import com.github.Mojashi.formula.{Add, Constant, EQ, Expression, Times, Var}
 
-trait CalcParikhConstrainedSolver[In, State, Label, Value, InnerValue] extends BaseSolver[In, State, Label, Value, InnerValue] {
+trait CalcParikhConstrainedSolver[In, Label, Value, InnerValue] extends BaseSolver[In, Label, Value, InnerValue] {
 
   def initCalcParikhImageConstraint(implicit m: Numeric[InnerValue],  m2: Numeric[Value], c: NumericCast[Value, InnerValue]): Unit = {
     labels.toSeq.foreach(label => {

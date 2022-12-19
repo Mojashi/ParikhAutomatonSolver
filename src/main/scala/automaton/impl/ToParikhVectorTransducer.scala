@@ -4,9 +4,9 @@ package automaton.impl
 import automaton.{NFA, TransducerTransitionImpl, Transition}
 
 object ToParikhVectorTransducer {
-  implicit class NFA_Parikh[In, State, T <: Transition[In, State]](nfa: NFA[In, State, T]) {
-    def toParikhVectorTransducer: VectorOutputTransducerImpl[In, State, In, Int] = {
-      new VectorOutputTransducerImpl[In, State, In, Int](
+  implicit class NFA_Parikh[In, T <: Transition[In]](nfa: NFA[In, T]) {
+    def toParikhVectorTransducer: VectorOutputTransducerImpl[In, In, Int] = {
+      new VectorOutputTransducerImpl[In, In, Int](
         start = nfa.start,
         fin = nfa.fin,
         transitions = nfa.transitions.map(t =>

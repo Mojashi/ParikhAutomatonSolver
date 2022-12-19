@@ -20,16 +20,16 @@ import java.util
 import scala.collection.mutable
 import collection.JavaConverters._
 
-abstract class SMTBasedSolver[In, State, Label]
+abstract class SMTBasedSolver[In, Label]
 (
-  override val pa: ParikhAutomaton[In, State, Label, Int],
+  override val pa: ParikhAutomaton[In, Label, Int],
   val underlyingSolver: SolverContextFactory.Solvers = Solvers.SMTINTERPOL,
 )
-  extends BaseSolver[In,State,Label,Int, Int]
-  with ParikhAutomatonSolver[In, State, Label, Int]
+  extends BaseSolver[In, Label,Int, Int]
+  with ParikhAutomatonSolver[In, Label, Int]
   with AutoCloseable
-  with EulerConstrainedSolver[In,State,Label,Int, Int]
-  with CalcParikhConstrainedSolver[In,State,Label,Int, Int] {
+  with EulerConstrainedSolver[In, Label,Int, Int]
+  with CalcParikhConstrainedSolver[In, Label,Int, Int] {
 
   override type InnerExpr = NumeralFormula.IntegerFormula
   override type InnerVar = NumeralFormula.IntegerFormula

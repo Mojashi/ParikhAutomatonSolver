@@ -6,17 +6,17 @@ import com.typesafe.scalalogging.Logger
 import com.github.Mojashi.automaton.ParikhAutomaton
 import com.github.Mojashi.formula.Predicate
 import com.github.Mojashi.graph
-import com.github.Mojashi.graph.EdgeID
+import com.github.Mojashi.graph.{EdgeID, StateID}
 import com.github.Mojashi.solver.algorithm.NumericCast
 
-class MIPSinglePointSolver[In, State, Label, Value: Numeric]
+class MIPSinglePointSolver[In, Label, Value: Numeric]
 (
-  pa: ParikhAutomaton[In, State, Label, Value],
+  pa: ParikhAutomaton[In, Label, Value],
   lpRelaxed: Boolean = false,
   ensureOptimumObjective: Boolean = true,
   underlyingSolver: ORToolsMIPSolver = ORToolsMIPSolver.SCIP,
 )(implicit cast: NumericCast[Value, Double])
-  extends MIPBasedSolver[In, State, Label, Value](pa, lpRelaxed, ensureConnectivity = true, underlyingSolver = underlyingSolver) {
+  extends MIPBasedSolver[In, Label, Value](pa, lpRelaxed, ensureConnectivity = true, underlyingSolver = underlyingSolver) {
 
 
   def initConnectivityFlowConstraint = {
@@ -57,11 +57,11 @@ class MIPSinglePointSolver[In, State, Label, Value: Numeric]
     )
   }
 
-  def getMPConstraintForConnectivityFlow(state: State): MPConstraint = {
+  def getMPConstraintForConnectivityFlow(state: StateID): MPConstraint = {
     getConstraint(s"FLOW_CONSTRAINT{$state}")
   }
 
-  def rec(connected: Set[State], notConnected: Set[State]): Option[(Double, Map[EdgeID, Double])] = {
+  def rec(connected: Set[StateID], notConnected: Set[StateID]): Option[(Double, Map[EdgeID, Double])] = {
     Logger("rec").debug(s"rec: ${connected.size}")
 
     assert(pa.voa.fin != notConnected)

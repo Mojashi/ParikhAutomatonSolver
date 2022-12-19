@@ -7,7 +7,7 @@ import graph.EdgeID
 import com.github.Mojashi.automaton.ParikhAutomaton
 import com.github.Mojashi.solver.algorithm.NumericCast
 
-abstract class BaseSolver[In, State, Label, Value: Numeric, InnerValue: Numeric]
+abstract class BaseSolver[In, Label, Value: Numeric, InnerValue: Numeric]
 (implicit valueM: Numeric[Value], innerM: Numeric[InnerValue], cast: NumericCast[Value, InnerValue])
 {
   type InnerVarName = String
@@ -15,7 +15,7 @@ abstract class BaseSolver[In, State, Label, Value: Numeric, InnerValue: Numeric]
   type InnerExpr
   type InnerConstraint
 
-  val pa: ParikhAutomaton[In, State, Label, Value]
+  val pa: ParikhAutomaton[In, Label, Value]
   val labels = pa.voa.transitions.flatMap(t => t.out.getOrElse(Map()).keys).toSet
 
 

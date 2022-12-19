@@ -3,17 +3,18 @@ package automaton.impl
 
 import automaton.{TransducerTransition, VectorOutputTransducer}
 
+import com.github.Mojashi.graph.StateID
 import com.github.Mojashi.utils.addVector
 
-class VectorOutputTransducerImpl[In, State, Label, Value: Numeric]
+class VectorOutputTransducerImpl[In, Label, Value: Numeric]
 (
-  start: State,
-  fin: State,
-  transitions: Seq[TransducerTransition[In, Map[Label, Value], State]],
-) extends NFTransducerImpl[In, Map[Label, Value], State, TransducerTransition[In, Map[Label, Value], State]] (
+  start: StateID,
+  fin: StateID,
+  transitions: Seq[TransducerTransition[In, Map[Label, Value]]],
+) extends NFTransducerImpl[In, Map[Label, Value], TransducerTransition[In, Map[Label, Value]]] (
   start, fin, transitions
 )
-with VectorOutputTransducer[In, State, Label, Value]
+with VectorOutputTransducer[In, Label, Value]
 {
   override def runWithAddition(in: Seq[In]): Set[Map[Label, Value]] = {
     run(in).map(s => s.fold(Map())( (sum, cur) =>

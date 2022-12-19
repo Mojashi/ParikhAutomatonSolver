@@ -3,20 +3,22 @@ package automaton.impl
 
 import automaton.{NFTransducer, TransducerTransition}
 
+import com.github.Mojashi.graph.StateID
+
 import scala.collection.mutable
 
-class NFTransducerImpl[In, Out, State, T <: TransducerTransition[In, Out,State]]
+class NFTransducerImpl[In, Out, T <: TransducerTransition[In, Out]]
 (
-  start: State,
-  fin: State,
+  start: StateID,
+  fin: StateID,
   transitions: Seq[T],
-) extends NFAImpl[In, State, T] (
+) extends NFAImpl[In, T] (
   start, fin, transitions
-) with NFTransducer[In, Out, State, T] {
+) with NFTransducer[In, Out, T] {
   override def run(in: Seq[In]): Set[Seq[Out]] = {
-    val reached = mutable.Set[(State, Int)]()
+    val reached = mutable.Set[(StateID, Int)]()
 
-    def dfs(pos: State, word: Seq[In]): Set[Seq[Out]] = {
+    def dfs(pos: StateID, word: Seq[In]): Set[Seq[Out]] = {
       if (reached.contains((pos, word.length))) return Set()
       reached.add((pos, word.length))
 

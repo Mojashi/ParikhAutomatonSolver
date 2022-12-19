@@ -28,7 +28,7 @@ package object mp {
     }
   }
 
-  def getInputFromNEU[In,State](nfa: NFA[In, State, Transition[In, State]], neu: Map[EdgeID, Double]): Seq[In] = {
+  def getInputFromNEU[In](nfa: NFA[In, Transition[In]], neu: Map[EdgeID, Double]): Seq[In] = {
     graph.getEulerTrail(
       nfa,
       neu.map { case (e, c) =>

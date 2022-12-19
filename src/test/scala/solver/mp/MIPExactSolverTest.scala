@@ -16,8 +16,8 @@ class MIPExactSolverTest extends AnyFunSuiteLike {
   com.google.ortools.Loader.loadNativeLibraries()
 
   val solverMakers = Seq(
-    (pa: ParikhAutomaton[Char, Int, Char, Int]) => new MIPSinglePointSolver(pa),
-    (pa: ParikhAutomaton[Char, Int, Char, Int]) => new SMTConventionalExactSolver(pa)
+    (pa: ParikhAutomaton[Char, Char, Int]) => new MIPSinglePointSolver(pa),
+    (pa: ParikhAutomaton[Char, Char, Int]) => new SMTConventionalExactSolver(pa)
   )
 
   test("testSolveInput") {
@@ -34,7 +34,7 @@ class MIPExactSolverTest extends AnyFunSuiteLike {
     )
 
     //showDotInBrowser(a.toDot)
-    def testIt(solver: ParikhAutomatonSolver[Char, Int, Char, Int]) = {
+    def testIt(solver: ParikhAutomatonSolver[Char, Char, Int]) = {
       val inputOpt = for {
         neu <- solver.solve()
         in <- Some(getInputFromNEU(pa.voa, neu))

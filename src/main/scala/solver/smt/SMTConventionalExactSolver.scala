@@ -7,15 +7,15 @@ import com.typesafe.scalalogging.Logger
 import org.sosy_lab.java_smt.SolverContextFactory
 import org.sosy_lab.java_smt.SolverContextFactory.Solvers
 import formula.{Add, And, Constant, EQ, GTEQ, LTEQ, Or, Var}
-import graph.EdgeID
+import graph.{EdgeID, StateID}
 
 import scala.util.Using
 
-class SMTConventionalExactSolver[In, State, Label]
+class SMTConventionalExactSolver[In, Label]
 (
-  pa: ParikhAutomaton[In, State, Label, Int],
+  pa: ParikhAutomaton[In, Label, Int],
   underlyingSolver: SolverContextFactory.Solvers = Solvers.SMTINTERPOL,
-) extends SMTBasedSolver[In, State, Label] (
+) extends SMTBasedSolver[In, Label] (
   pa, underlyingSolver
 ) {
 
@@ -48,7 +48,7 @@ class SMTConventionalExactSolver[In, State, Label]
     }
   }
 
-  def getInnerVariableForDistance(s: State): InnerVarWithName = {
+  def getInnerVariableForDistance(s: StateID): InnerVarWithName = {
     getInnerVariable(s"DISTANCE{$s}")
   }
 

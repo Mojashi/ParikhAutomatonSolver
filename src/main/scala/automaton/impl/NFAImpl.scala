@@ -2,19 +2,20 @@ package com.github.Mojashi
 package automaton.impl
 
 import automaton.{NFA, Transition}
+
 import scala.collection.mutable
-import com.github.Mojashi.graph.GraphImpl
+import com.github.Mojashi.graph.{GraphImpl, StateID}
 
-class NFAImpl[In, State, T <: Transition[In, State]]
+class NFAImpl[In, T <: Transition[In]]
 (
-  override val start: State,
-  override val fin: State,
+  override val start: StateID,
+  override val fin: StateID,
   transitions: Seq[T],
-)extends GraphImpl[State, T](transitions) with NFA[In, State, T] {
+)extends GraphImpl[T](transitions) with NFA[In, T] {
   override def accept(in: Seq[In]): Boolean = {
-    val reached = mutable.Set[(State, Int)]()
+    val reached = mutable.Set[(StateID, Int)]()
 
-    def dfs(pos: State, word: Seq[In]): Boolean = {
+    def dfs(pos: StateID, word: Seq[In]): Boolean = {
       if(pos == fin) return true
       if(reached.contains((pos, word.length))) return false
 

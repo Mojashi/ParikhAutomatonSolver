@@ -1,11 +1,11 @@
 package com.github.Mojashi
 package automaton
 
-import graph.Graph
+import graph.{Graph, StateID}
 
-trait NFA[In, State, +T <: Transition[In, State]] extends Graph [State, T] {
-  val start: State
-  val fin: State
+trait NFA[In, +T <: Transition[In]] extends Graph [T] {
+  val start: StateID
+  val fin: StateID
 
   def accept(in: Seq[In]): Boolean
 }

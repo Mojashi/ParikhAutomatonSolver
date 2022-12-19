@@ -52,7 +52,7 @@ object utils {
 
   }
 
-  implicit class GraphToDot[State](g: Graph[State, Edge[State]]) {
+  implicit class GraphToDot(g: Graph[Edge]) {
     def toDot = {
       s"digraph {\nrankdir=LR;\n" + {
         g.transitions.map { e => s"\"${e.from}\" -> \"${e.to}\" [label=\"${e}\", style = solid ];" }.mkString("\n")
@@ -60,7 +60,7 @@ object utils {
     }
   }
 
-  implicit class NFAToDot[In, State](g: NFA[In, State, Transition[In, State]]) {
+  implicit class NFAToDot[In](g: NFA[In, Transition[In]]) {
     def toDot = {
       s"digraph {\nrankdir=LR;\n" + {
         "\n superstart[shape = point ];\n" + s"superstart->\"${g.start}\"\n" + s"\"${g.fin}\" [shape=doublecircle];\n" +

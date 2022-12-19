@@ -17,17 +17,17 @@ case class ExplicitMPConstraint
   range: (Double, Double)
 )
 
-abstract class MIPBasedSolver[In, State, Label, Value: Numeric]
+abstract class MIPBasedSolver[In, Label, Value: Numeric]
 (
-  val pa: ParikhAutomaton[In, State, Label, Value],
+  val pa: ParikhAutomaton[In, Label, Value],
   val lpRelaxed:Boolean = false,
   val ensureConnectivity: Boolean = true,
   val underlyingSolver: ORToolsMIPSolver = ORToolsMIPSolver.SCIP,
 ) (implicit cast: NumericCast[Value, Double])
-  extends BaseSolver[In, State, Label, Value, Double]
-    with ParikhAutomatonSolver[In, State, Label, Value]
-    with EulerConstrainedSolver[In, State, Label, Value, Double]
-    with CalcParikhConstrainedSolver[In, State, Label, Value, Double] {
+  extends BaseSolver[In, Label, Value, Double]
+    with ParikhAutomatonSolver[In, Label, Value]
+    with EulerConstrainedSolver[In, Label, Value, Double]
+    with CalcParikhConstrainedSolver[In, Label, Value, Double] {
 
   override type InnerExpr = Map[String, Double]
   override type InnerVar = MPVariable

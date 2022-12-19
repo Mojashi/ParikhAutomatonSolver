@@ -3,8 +3,8 @@ package automaton
 
 import formula.{Predicate}
 
-case class ParikhAutomaton [In, State, Label, Value]
+case class ParikhAutomaton [In, Label, Value]
 (
-  voa: VectorOutputTransducer[In, State, Label, Value],
+  voa: VectorOutputTransducer[In, Label, Value],
   constraint: Predicate[Label, Value],
 )

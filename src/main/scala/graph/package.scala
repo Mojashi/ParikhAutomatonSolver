@@ -6,18 +6,19 @@ import com.github.Mojashi.graph.{EdgeID, UnionFind}
 import scala.collection.mutable
 
 package object graph {
-  type EdgeID = Int
+  type EdgeID = String
+  type StateID = String
 
-  def getEulerTrail[In, State, T <: Transition[In, State]]
+  def getEulerTrail[In, T <: Transition[In]]
   (
-    g: NFA[In, State, T],
+    g: NFA[In, T],
     neu: Map[EdgeID, Int]
   ): Seq[T] = {
     val curNEU = mutable.Map.empty[EdgeID, Int]
 
     val trail = mutable.ListBuffer[EdgeID]()
 
-    def dfs(v: State, lastEdge: Option[EdgeID]): Unit = {
+    def dfs(v: StateID, lastEdge: Option[EdgeID]): Unit = {
       for(e <- g.sourceFrom(v) if curNEU.getOrElse(e.id, 0) < neu.getOrElse(e.id, 0)) {
         curNEU(e.id) = curNEU.getOrElse(e.id, 0) + 1
         dfs(e.to, Some(e.id))
@@ -37,11 +38,11 @@ package object graph {
   }
 
 
-  def findConnectedComponent[State, T <: Edge[State]]
+  def findConnectedComponent[T <: Edge]
   (
-    g: Graph[State, T], numEdgeUsed: Map[EdgeID, Double]
-  ): UnionFind[State] = {
-    val uf = new UnionFind[State]()
+    g: Graph[T], numEdgeUsed: Map[EdgeID, Double]
+  ): UnionFind[StateID] = {
+    val uf = new UnionFind[StateID]()
 
     for {
       (id, c) <- numEdgeUsed if c > 0

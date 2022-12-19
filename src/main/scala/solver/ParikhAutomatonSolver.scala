@@ -7,10 +7,10 @@ import com.github.Mojashi.formula.{AtomPredicate, Expression, Predicate}
 import com.github.Mojashi.graph.{Edge, EdgeID}
 
 
-trait ParikhAutomatonSolver[In, State, Label, Value] {
+trait ParikhAutomatonSolver[In, Label, Value] {
   def solve(): Option[Map[EdgeID, Double]]
 
-  val pa: ParikhAutomaton[In, State, Label, Value]
+  val pa: ParikhAutomaton[In, Label, Value]
   def setObjective(minimize: Expression[Label, Value])
 
   type ConstraintID = String

@@ -7,7 +7,7 @@ import com.github.Mojashi.formula
 import com.github.Mojashi.formula.{Add, Constant, EQ, Var}
 import com.github.Mojashi.solver.BaseSolver
 
-trait EulerConstrainedSolver[In, State, Label, Value, InnerValue] extends BaseSolver[In, State, Label, Value, InnerValue] {
+trait EulerConstrainedSolver[In, Label, Value, InnerValue] extends BaseSolver[In, Label, Value, InnerValue] {
 
   def initEulerConstraint(implicit m: Numeric[InnerValue]) = {
     pa.voa.states.map(s => {
