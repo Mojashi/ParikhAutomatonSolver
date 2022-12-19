@@ -1,3 +1,6 @@
+[![](https://jitpack.io/v/Mojashi/ParikhAutomatonSolver.svg)](https://jitpack.io/#Mojashi/ParikhAutomatonSolver)
+
+
 ## Installation
 - Add JitPack repository and dependency to your build.sbt
 ```
