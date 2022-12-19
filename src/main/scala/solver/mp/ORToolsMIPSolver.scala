@@ -1,4 +1,4 @@
-package xyz.mojashi
+package com.github.Mojashi
 package solver.mp
 
 sealed abstract class ORToolsMIPSolver(val name: String, val supportInt: Boolean)

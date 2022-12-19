@@ -1,4 +1,4 @@
-package xyz.mojashi
+package com.github.Mojashi
 package graph
 
 class GraphImpl[State, E <: Edge[State]]

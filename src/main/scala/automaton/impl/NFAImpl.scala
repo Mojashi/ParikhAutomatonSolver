@@ -1,9 +1,9 @@
-package xyz.mojashi
+package com.github.Mojashi
 package automaton.impl
 
 import automaton.{NFA, Transition}
 import scala.collection.mutable
-import xyz.mojashi.graph.GraphImpl
+import com.github.Mojashi.graph.GraphImpl
 
 class NFAImpl[In, State, T <: Transition[Option[In], State]]
 (

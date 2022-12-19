@@ -1,4 +1,4 @@
-package xyz.mojashi
+package com.github.Mojashi
 package solver.mp
 
 import automaton.ParikhAutomaton
@@ -6,7 +6,7 @@ import graph.EdgeID
 
 import com.google.ortools.linearsolver.MPSolver
 import com.typesafe.scalalogging.Logger
-import xyz.mojashi.solver.algorithm.NumericCast
+import com.github.Mojashi.solver.algorithm.NumericCast
 
 class LPRelaxedSolver[In, State, Label, Value: Numeric]
 (

@@ -1,11 +1,11 @@
-package xyz.mojashi
+package com.github.Mojashi
 package solver
 
 import utils.{addVector, mulVector, subVector}
 
-import xyz.mojashi.automaton.{NFA, Transition}
-import xyz.mojashi.formula.{Add, Constant, Expression, Sub, Times, Var}
-import xyz.mojashi.graph.{Edge, EdgeID}
+import com.github.Mojashi.automaton.{NFA, Transition}
+import com.github.Mojashi.formula.{Add, Constant, Expression, Sub, Times, Var}
+import com.github.Mojashi.graph.{Edge, EdgeID}
 
 package object mp {
   def getCoefficients[Label, Value: Numeric]

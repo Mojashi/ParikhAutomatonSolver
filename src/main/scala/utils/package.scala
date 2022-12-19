@@ -1,8 +1,8 @@
-package xyz.mojashi
+package com.github.Mojashi
 
 import graph.{Edge, Graph}
 
-import xyz.mojashi.automaton.{NFA, Transition}
+import com.github.Mojashi.automaton.{NFA, Transition}
 
 import java.awt.Desktop
 import java.net.URI

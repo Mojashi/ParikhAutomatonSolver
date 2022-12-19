@@ -1,11 +1,11 @@
-package xyz.mojashi
+package com.github.Mojashi
 package solver.algorithm
 
 import automaton.ParikhAutomaton
 
-import xyz.mojashi.formula
-import xyz.mojashi.formula.{Add, Constant, EQ, Var}
-import xyz.mojashi.solver.BaseSolver
+import com.github.Mojashi.formula
+import com.github.Mojashi.formula.{Add, Constant, EQ, Var}
+import com.github.Mojashi.solver.BaseSolver
 
 trait EulerConstrainedSolver[In, State, Label, Value, InnerValue] extends BaseSolver[In, State, Label, Value, InnerValue] {
 

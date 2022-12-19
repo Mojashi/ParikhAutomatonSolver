@@ -1,16 +1,16 @@
-package xyz.mojashi
+package com.github.Mojashi
 package solver.mp
 
 import dk.brics.automaton.RegExp
 import org.scalatest.funsuite.AnyFunSuiteLike
-import xyz.mojashi.automaton.ParikhAutomaton
-import xyz.mojashi.automaton.impl.BricsNFAAdapter.BricsNFAAdapter
-import xyz.mojashi.automaton.impl.ToParikhVectorTransducer.NFA_Parikh
-import xyz.mojashi.formula.{And, Constant, EQ, GTEQ, Sub, Times, Var}
-import xyz.mojashi.solver.ParikhAutomatonSolver
-import xyz.mojashi.solver.algorithm.Implicits.IntDoubleNumericCast
-import xyz.mojashi.solver.smt.SMTConventionalExactSolver
-import xyz.mojashi.utils.{NFAToDot, showDotInBrowser}
+import com.github.Mojashi.automaton.ParikhAutomaton
+import com.github.Mojashi.automaton.impl.BricsNFAAdapter.BricsNFAAdapter
+import com.github.Mojashi.automaton.impl.ToParikhVectorTransducer.NFA_Parikh
+import com.github.Mojashi.formula.{And, Constant, EQ, GTEQ, Sub, Times, Var}
+import com.github.Mojashi.solver.ParikhAutomatonSolver
+import com.github.Mojashi.solver.algorithm.Implicits.IntDoubleNumericCast
+import com.github.Mojashi.solver.smt.SMTConventionalExactSolver
+import com.github.Mojashi.utils.{NFAToDot, showDotInBrowser}
 
 class MIPExactSolverTest extends AnyFunSuiteLike {
   com.google.ortools.Loader.loadNativeLibraries()

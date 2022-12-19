@@ -1,4 +1,4 @@
-package xyz.mojashi
+package com.github.Mojashi
 package solver.smt
 
 import automaton.ParikhAutomaton

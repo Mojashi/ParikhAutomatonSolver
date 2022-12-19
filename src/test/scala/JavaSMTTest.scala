@@ -1,4 +1,4 @@
-package xyz.mojashi
+package com.github.Mojashi
 
 import org.sosy_lab.common.ShutdownManager
 import org.sosy_lab.common.configuration.Configuration

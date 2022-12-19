@@ -1,4 +1,4 @@
-ThisBuild / version := "0.2.1"
+ThisBuild / version := "0.2.2"
 
 ThisBuild / scalaVersion := "2.13.10"
 
@@ -33,5 +33,5 @@ libraryDependencies += "com.typesafe.scala-logging" %% "scala-logging" % "3.9.4"
 lazy val root = (project in file("."))
   .settings(
     name := "ParikhAutomatonSolver",
-    idePackagePrefix := Some("xyz.mojashi")
+    idePackagePrefix := Some("com.github.Mojashi")
   )

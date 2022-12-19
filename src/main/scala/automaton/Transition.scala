@@ -1,4 +1,4 @@
-package xyz.mojashi
+package com.github.Mojashi
 package automaton
 
 import graph.{Edge, EdgeID}

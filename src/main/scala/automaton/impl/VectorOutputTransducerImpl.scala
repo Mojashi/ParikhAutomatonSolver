@@ -1,9 +1,9 @@
-package xyz.mojashi
+package com.github.Mojashi
 package automaton.impl
 
 import automaton.{TransducerTransition, VectorOutputTransducer}
 
-import xyz.mojashi.utils.addVector
+import com.github.Mojashi.utils.addVector
 
 class VectorOutputTransducerImpl[In, State, Label, Value: Numeric]
 (

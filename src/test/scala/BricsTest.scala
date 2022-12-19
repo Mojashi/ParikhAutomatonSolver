@@ -1,8 +1,8 @@
-package xyz.mojashi
+package com.github.Mojashi
 
 import dk.brics.automaton.{Automaton, RegExp}
-import xyz.mojashi.automaton.impl.BricsNFAAdapter.BricsNFAAdapter
-import xyz.mojashi.utils.{NFAToDot, showDotInBrowser}
+import com.github.Mojashi.automaton.impl.BricsNFAAdapter.BricsNFAAdapter
+import com.github.Mojashi.utils.{NFAToDot, showDotInBrowser}
 
 class BricsTest extends org.scalatest.funsuite.AnyFunSuiteLike {
 

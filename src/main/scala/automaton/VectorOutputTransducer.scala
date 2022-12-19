@@ -1,4 +1,4 @@
-package xyz.mojashi
+package com.github.Mojashi
 package automaton
 
 trait VectorOutputTransducer[In, State, Label, Value] extends NFTransducer[In, Map[Label, Value], State, TransducerTransition[Option[In], Map[Label, Value], State]] {

@@ -1,4 +1,4 @@
-package xyz.mojashi
+package com.github.Mojashi
 package formula
 
 sealed trait Predicate[Variable, Value] {

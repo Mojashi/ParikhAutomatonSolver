@@ -1,9 +1,9 @@
-package xyz.mojashi
+package com.github.Mojashi
 package solver.algorithm
 
 import solver.BaseSolver
 
-import xyz.mojashi.formula.{Add, Constant, EQ, Expression, Times, Var}
+import com.github.Mojashi.formula.{Add, Constant, EQ, Expression, Times, Var}
 
 trait CalcParikhConstrainedSolver[In, State, Label, Value, InnerValue] extends BaseSolver[In, State, Label, Value, InnerValue] {
 

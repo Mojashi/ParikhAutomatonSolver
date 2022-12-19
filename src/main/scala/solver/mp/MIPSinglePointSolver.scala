@@ -1,13 +1,13 @@
-package xyz.mojashi
+package com.github.Mojashi
 package solver.mp
 
 import com.google.ortools.linearsolver.{MPConstraint, MPSolver, MPVariable}
 import com.typesafe.scalalogging.Logger
-import xyz.mojashi.automaton.ParikhAutomaton
-import xyz.mojashi.formula.Predicate
-import xyz.mojashi.graph
-import xyz.mojashi.graph.EdgeID
-import xyz.mojashi.solver.algorithm.NumericCast
+import com.github.Mojashi.automaton.ParikhAutomaton
+import com.github.Mojashi.formula.Predicate
+import com.github.Mojashi.graph
+import com.github.Mojashi.graph.EdgeID
+import com.github.Mojashi.solver.algorithm.NumericCast
 
 class MIPSinglePointSolver[In, State, Label, Value: Numeric]
 (

@@ -1,11 +1,11 @@
-package xyz.mojashi
+package com.github.Mojashi
 package solver
 
 import formula.{Add, And, AtomPredicate, Constant, EQ, Expression, GTEQ, LTEQ, Or, Predicate, Sub, Times, Var}
 import graph.EdgeID
 
-import xyz.mojashi.automaton.ParikhAutomaton
-import xyz.mojashi.solver.algorithm.NumericCast
+import com.github.Mojashi.automaton.ParikhAutomaton
+import com.github.Mojashi.solver.algorithm.NumericCast
 
 abstract class BaseSolver[In, State, Label, Value: Numeric, InnerValue: Numeric]
 (implicit valueM: Numeric[Value], innerM: Numeric[InnerValue], cast: NumericCast[Value, InnerValue])

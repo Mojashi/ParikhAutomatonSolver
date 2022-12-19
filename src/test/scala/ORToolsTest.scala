@@ -1,4 +1,4 @@
-package xyz.mojashi
+package com.github.Mojashi
 
 import com.google.ortools.linearsolver.MPSolver
 

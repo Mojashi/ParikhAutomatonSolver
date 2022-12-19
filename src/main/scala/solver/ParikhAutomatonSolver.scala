@@ -1,10 +1,10 @@
-package xyz.mojashi
+package com.github.Mojashi
 package solver
 
 import automaton.ParikhAutomaton
 
-import xyz.mojashi.formula.{AtomPredicate, Expression, Predicate}
-import xyz.mojashi.graph.{Edge, EdgeID}
+import com.github.Mojashi.formula.{AtomPredicate, Expression, Predicate}
+import com.github.Mojashi.graph.{Edge, EdgeID}
 
 
 trait ParikhAutomatonSolver[In, State, Label, Value] {

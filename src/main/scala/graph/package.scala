@@ -1,7 +1,7 @@
-package xyz.mojashi
+package com.github.Mojashi
 
-import xyz.mojashi.automaton.{NFA, Transition}
-import xyz.mojashi.graph.{EdgeID, UnionFind}
+import com.github.Mojashi.automaton.{NFA, Transition}
+import com.github.Mojashi.graph.{EdgeID, UnionFind}
 
 import scala.collection.mutable
 

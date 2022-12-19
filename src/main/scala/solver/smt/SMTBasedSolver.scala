@@ -1,4 +1,4 @@
-package xyz.mojashi
+package com.github.Mojashi
 package solver.smt
 
 import solver.{BaseSolver, ParikhAutomatonSolver}
@@ -13,8 +13,8 @@ import org.sosy_lab.java_smt.api.SolverContext.ProverOptions
 import automaton.ParikhAutomaton
 import solver.algorithm.{CalcParikhConstrainedSolver, EulerConstrainedSolver}
 
-import xyz.mojashi.formula.{Add, And, AtomPredicate, Constant, EQ, Expression, GTEQ, LTEQ, Or, Predicate, Sub, Times, Var}
-import xyz.mojashi.solver.algorithm.Implicits.IntIntNumericCast
+import com.github.Mojashi.formula.{Add, And, AtomPredicate, Constant, EQ, Expression, GTEQ, LTEQ, Or, Predicate, Sub, Times, Var}
+import com.github.Mojashi.solver.algorithm.Implicits.IntIntNumericCast
 
 import java.util
 import scala.collection.mutable

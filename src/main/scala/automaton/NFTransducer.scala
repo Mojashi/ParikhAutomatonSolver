@@ -1,4 +1,4 @@
-package xyz.mojashi
+package com.github.Mojashi
 package automaton
 
 trait NFTransducer[In, Out, State, +T <: TransducerTransition[Option[In], Out, State]] extends NFA[In, State, T] {

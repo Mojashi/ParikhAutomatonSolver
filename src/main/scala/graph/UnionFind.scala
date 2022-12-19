@@ -1,4 +1,4 @@
-package xyz.mojashi
+package com.github.Mojashi
 package graph
 
 import scala.collection.mutable.{HashMap, Map}
