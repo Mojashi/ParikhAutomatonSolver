@@ -67,12 +67,4 @@ class MIPExactSolverTest extends AnyFunSuiteLike {
 
     solverMakers.foreach(maker => testIt(maker(pa)))
   }
-
-  def toTransducer(ss: List[String]): NFTransducer[String, Int, List[Char]] =
-    TransducerImpl(
-      "q", Set("q"), ss.zipWithIndex.map({ case (s, idx) =>
-        ListTransducerTransition[String, Int, Char](s"q", "q", Some(idx), s.toList, s"$idx")
-      })
-    )(ListMonoid[Char]())
-
 }

@@ -5,7 +5,7 @@ import automaton.{NFA, Transition}
 import scala.collection.mutable
 import com.github.Mojashi.graph.GraphImpl
 
-class NFAImpl[In, State, T <: Transition[Option[In], State]]
+class NFAImpl[In, State, T <: Transition[In, State]]
 (
   override val start: State,
   override val fin: State,

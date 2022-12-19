@@ -5,7 +5,7 @@ import automaton.{NFTransducer, TransducerTransition}
 
 import scala.collection.mutable
 
-class NFTransducerImpl[In, Out, State, T <: TransducerTransition[Option[In], Out,State]]
+class NFTransducerImpl[In, Out, State, T <: TransducerTransition[In, Out,State]]
 (
   start: State,
   fin: State,
@@ -31,7 +31,7 @@ class NFTransducerImpl[In, Out, State, T <: TransducerTransition[Option[In], Out
                 dfs(t.to, word.tail)
               else Set()
             case None => dfs(t.to, word)
-          }).map(s => t.out +: s)
+          }).map(s => t.out.toSeq ++ s)
         })
       )
     }

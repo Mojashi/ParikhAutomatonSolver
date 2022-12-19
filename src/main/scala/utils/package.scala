@@ -60,7 +60,7 @@ object utils {
     }
   }
 
-  implicit class NFAToDot[In, State](g: NFA[In, State, Transition[Option[In], State]]) {
+  implicit class NFAToDot[In, State](g: NFA[In, State, Transition[In, State]]) {
     def toDot = {
       s"digraph {\nrankdir=LR;\n" + {
         "\n superstart[shape = point ];\n" + s"superstart->\"${g.start}\"\n" + s"\"${g.fin}\" [shape=doublecircle];\n" +

@@ -8,7 +8,7 @@ import scala.collection.mutable
 package object graph {
   type EdgeID = Int
 
-  def getEulerTrail[In, State, T <: Transition[Option[In], State]]
+  def getEulerTrail[In, State, T <: Transition[In, State]]
   (
     g: NFA[In, State, T],
     neu: Map[EdgeID, Int]

@@ -4,7 +4,7 @@ package automaton.impl
 import automaton.{NFA, TransducerTransitionImpl, Transition}
 
 object ToParikhVectorTransducer {
-  implicit class NFA_Parikh[In, State, T <: Transition[Option[In], State]](nfa: NFA[In, State, T]) {
+  implicit class NFA_Parikh[In, State, T <: Transition[In, State]](nfa: NFA[In, State, T]) {
     def toParikhVectorTransducer: VectorOutputTransducerImpl[In, State, In, Int] = {
       new VectorOutputTransducerImpl[In, State, In, Int](
         start = nfa.start,
@@ -14,10 +14,7 @@ object ToParikhVectorTransducer {
             from = t.from,
             to = t.to,
             in = t.in,
-            out = t.in match {
-              case Some(ch) => Map((ch, 1))
-              case None => Map()
-            },
+            out = t.in.flatMap(ch => Some(Map((ch, 1)))),
             id = t.id,
           )
         )

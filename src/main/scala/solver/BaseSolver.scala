@@ -16,7 +16,7 @@ abstract class BaseSolver[In, State, Label, Value: Numeric, InnerValue: Numeric]
   type InnerConstraint
 
   val pa: ParikhAutomaton[In, State, Label, Value]
-  val labels = pa.voa.transitions.flatMap(t => t.out.keys).toSet
+  val labels = pa.voa.transitions.flatMap(t => t.out.getOrElse(Map()).keys).toSet
 
 
   case class InnerVarWithName (

@@ -10,7 +10,7 @@ import scala.collection.convert.ImplicitConversions.`collection AsScalaIterable`
 
   package object BricsNFAAdapter {
     implicit class BricsNFAAdapter(automaton: Automaton){
-      def toNFA(): NFA[Char, Int, Transition[Option[Char], Int]] = {
+      def toNFA(): NFA[Char, Int, Transition[Char, Int]] = {
         val stateId = automaton.getStates.zipWithIndex.toMap
         val fin = automaton.getStates.size()
 
@@ -19,7 +19,7 @@ import scala.collection.convert.ImplicitConversions.`collection AsScalaIterable`
           fin = fin,
           transitions = automaton.getStates.flatMap(s => s.getTransitions.flatMap(t =>
             (t.getMin to t.getMax).map(ch =>
-              TransitionImpl[Option[Char], Int](
+              TransitionImpl[Char, Int](
                 in = Some(ch),
                 from = stateId(s),
                 to = stateId(t.getDest),

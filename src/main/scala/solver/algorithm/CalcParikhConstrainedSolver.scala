@@ -13,10 +13,10 @@ trait CalcParikhConstrainedSolver[In, State, Label, Value, InnerValue] extends B
         EQ(
           Var[InnerVarName, InnerValue](getInnerVariableForLabel(label).name),
           pa.voa.transitions.filter(t =>
-            m.gt(c.cast(t.out.getOrElse[Value](label, m2.zero)), m.zero)
+            m.gt(c.cast(t.out.getOrElse(Map()).getOrElse[Value](label, m2.zero)), m.zero)
           ).map(t =>
             Times(
-              Constant[InnerVarName, InnerValue](c.cast(t.out.getOrElse[Value](label, m2.zero))),
+              Constant[InnerVarName, InnerValue](c.cast(t.out.getOrElse(Map()).getOrElse[Value](label, m2.zero))),
               Var[InnerVarName, InnerValue](getInnerVariableForNumEdgeUsed(t.id).name)
             )
           ).fold(Constant[InnerVarName, InnerValue](m.zero))((sum, t)=>Add(sum, t))

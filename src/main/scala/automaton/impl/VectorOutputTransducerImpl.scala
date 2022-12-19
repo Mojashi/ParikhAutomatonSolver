@@ -9,8 +9,8 @@ class VectorOutputTransducerImpl[In, State, Label, Value: Numeric]
 (
   start: State,
   fin: State,
-  transitions: Seq[TransducerTransition[Option[In], Map[Label, Value], State]],
-) extends NFTransducerImpl[In, Map[Label, Value], State, TransducerTransition[Option[In], Map[Label, Value], State]] (
+  transitions: Seq[TransducerTransition[In, Map[Label, Value], State]],
+) extends NFTransducerImpl[In, Map[Label, Value], State, TransducerTransition[In, Map[Label, Value], State]] (
   start, fin, transitions
 )
 with VectorOutputTransducer[In, State, Label, Value]

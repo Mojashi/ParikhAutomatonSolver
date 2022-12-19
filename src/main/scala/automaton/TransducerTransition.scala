@@ -4,13 +4,13 @@ package automaton
 import graph.EdgeID
 
 trait TransducerTransition[In, Out, State] extends Transition[In, State] {
-  def out: Out
+  def out: Option[Out]
 }
 
 case class TransducerTransitionImpl[In, Out, State]
 (
-  out: Out,
-  in: In,
+  out: Option[Out],
+  in: Option[In],
   from: State,
   to: State,
   id: EdgeID
