@@ -145,8 +145,15 @@ abstract class MIPBasedSolver[In, State, Label, Value: Numeric]
     }
   }
 
+  def constraintNEUisInteger = {
+    pa.voa.transitions.foreach(t =>
+      getInnerVariableForNumEdgeUsed(t.id).v.setInteger(true)
+    )
+  }
+
   initEulerConstraint
   initCalcParikhImageConstraint
   constraintPAConstraint
   constraintNumEdgeUsedIsPositive
+  if(!lpRelaxed) constraintNEUisInteger
 }

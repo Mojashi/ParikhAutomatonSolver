@@ -14,8 +14,9 @@ class MIPSinglePointSolver[In, State, Label, Value: Numeric]
   pa: ParikhAutomaton[In, State, Label, Value],
   lpRelaxed: Boolean = false,
   ensureOptimumObjective: Boolean = true,
+  underlyingSolver: ORToolsMIPSolver = ORToolsMIPSolver.SCIP,
 )(implicit cast: NumericCast[Value, Double])
-  extends MIPBasedSolver[In, State, Label, Value](pa, lpRelaxed) {
+  extends MIPBasedSolver[In, State, Label, Value](pa, lpRelaxed, ensureConnectivity = true, underlyingSolver = underlyingSolver) {
 
 
   def initConnectivityFlowConstraint = {

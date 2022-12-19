@@ -46,6 +46,23 @@ class MIPExactSolverTest extends AnyFunSuiteLike {
 
       assert(input.count(ch => ch == 'z') >= 11)
       assert(input.count(ch => ch == 'z') == 2 * input.count(ch => ch == 'y'))
+
+
+      // incremental solving
+      solver.addAtomPredicateConstraint(GTEQ(Var[Char,Int]('k'), Constant(10)))
+
+      val inputOpt2 = for {
+        neu <- solver.solve()
+        in <- Some(getInputFromNEU(pa.voa, neu))
+      } yield in
+      assert(inputOpt2.isDefined)
+
+      val input2 = inputOpt2.get
+      println(s"ans: ${input2.mkString}")
+
+      assert(input2.count(ch => ch == 'z') >= 11)
+      assert(input2.count(ch => ch == 'k') >= 10)
+      assert(input2.count(ch => ch == 'z') == 2 * input2.count(ch => ch == 'y'))
     }
 
     solverMakers.foreach(maker => testIt(maker(pa)))
