@@ -1,10 +1,10 @@
-ThisBuild / version := "0.3"
+ThisBuild / version := "0.3.1"
 
 ThisBuild / scalaVersion := "2.13.10"
 
 publishTo := Some("GitHub Apache Maven Packages" at "https://maven.pkg.github.com/Mojashi/ParikhAutomatonSolver")
 publishMavenStyle := true
-credentials += Credentials(r
+credentials += Credentials(
   "GitHub Package Registry",
   "maven.pkg.github.com",
   "Mojashi",

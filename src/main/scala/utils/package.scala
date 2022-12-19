@@ -1,6 +1,6 @@
 package com.github.Mojashi
 
-import graph.{Edge, Graph}
+import graph.{Edge, EdgeID, Graph}
 
 import com.github.Mojashi.automaton.{NFA, Transition}
 
@@ -61,12 +61,14 @@ object utils {
   }
 
   implicit class NFAToDot[In](g: NFA[In, Transition[In]]) {
-    def toDot = {
+    def toDot(neu: Map[EdgeID, Double]): String = {
       s"digraph {\nrankdir=LR;\n" + {
         "\n superstart[shape = point ];\n" + s"superstart->\"${g.start}\"\n" + s"\"${g.fin}\" [shape=doublecircle];\n" +
-        g.transitions.map { e => s"\"${e.from}\" -> \"${e.to}\" [label=\"$e\", style = solid ];" }.mkString("\n")
+        g.transitions.map { e => s"\"${e.from}\" -> \"${e.to}\" [label=\"$e\\n${if(neu.nonEmpty)neu.getOrElse(e.id, 0.0) else ""}\", style = ${if(neu.isEmpty || neu.getOrElse(e.id, 0.0)>0.0) "solid" else "dashed"} ];" }.mkString("\n")
       } + "nodesep=\"1\";}"
     }
+
+    def toDot: String = toDot(Map())
   }
 
 }
