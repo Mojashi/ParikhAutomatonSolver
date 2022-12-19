@@ -17,21 +17,24 @@ class NFTransducerImpl[In, Out, State, T <: TransducerTransition[Option[In], Out
     val reached = mutable.Set[(State, Int)]()
 
     def dfs(pos: State, word: Seq[In]): Set[Seq[Out]] = {
-      if (pos == fin) return Set(Seq())
       if (reached.contains((pos, word.length))) return Set()
-
       reached.add((pos, word.length))
 
-      sourceFrom(pos).flatMap(t => {
-        t.in match {
-          case Some(ch) =>
-            if (word.head == ch)
-              dfs(t.to, word.tail).map(s => t.out +: s)
-            else Set()
-          case None => dfs(t.to, word)
-        }
-      })
-    }.toSet
+      (
+        if (pos == fin && word.isEmpty) Set(Seq())
+        else Set()
+      ) ++ (
+        sourceFrom(pos).flatMap(t => {
+          (t.in match {
+            case Some(ch) =>
+              if (word.nonEmpty && word.head == ch)
+                dfs(t.to, word.tail)
+              else Set()
+            case None => dfs(t.to, word)
+          }).map(s => t.out +: s)
+        })
+      )
+    }
 
     dfs(start, in)
   }

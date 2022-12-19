@@ -3,7 +3,7 @@ package solver.mp
 
 import dk.brics.automaton.RegExp
 import org.scalatest.funsuite.AnyFunSuiteLike
-import com.github.Mojashi.automaton.ParikhAutomaton
+import com.github.Mojashi.automaton.{NFTransducer, ParikhAutomaton}
 import com.github.Mojashi.automaton.impl.BricsNFAAdapter.BricsNFAAdapter
 import com.github.Mojashi.automaton.impl.ToParikhVectorTransducer.NFA_Parikh
 import com.github.Mojashi.formula.{And, Constant, EQ, GTEQ, Sub, Times, Var}
@@ -67,4 +67,12 @@ class MIPExactSolverTest extends AnyFunSuiteLike {
 
     solverMakers.foreach(maker => testIt(maker(pa)))
   }
+
+  def toTransducer(ss: List[String]): NFTransducer[String, Int, List[Char]] =
+    TransducerImpl(
+      "q", Set("q"), ss.zipWithIndex.map({ case (s, idx) =>
+        ListTransducerTransition[String, Int, Char](s"q", "q", Some(idx), s.toList, s"$idx")
+      })
+    )(ListMonoid[Char]())
+
 }
