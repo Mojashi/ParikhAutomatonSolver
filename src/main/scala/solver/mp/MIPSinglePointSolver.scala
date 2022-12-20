@@ -3,11 +3,10 @@ package solver.mp
 
 import com.google.ortools.linearsolver.{MPConstraint, MPSolver, MPVariable}
 import com.typesafe.scalalogging.Logger
-import com.github.Mojashi.automaton.ParikhAutomaton
-import com.github.Mojashi.formula.Predicate
+import automaton.ParikhAutomaton
 import com.github.Mojashi.graph
-import com.github.Mojashi.graph.{EdgeID, StateID}
-import com.github.Mojashi.solver.algorithm.NumericCast
+import graph.{EdgeID, StateID}
+import solver.algorithm.NumericCast
 
 class MIPSinglePointSolver[In, Label, Value: Numeric]
 (
@@ -108,7 +107,6 @@ class MIPSinglePointSolver[In, Label, Value: Numeric]
         val tmp = rec(connected ++ newConnected, notConnected ++ newNotConnected)
 
         if (tmp.isDefined) {
-
           val (objV, neu) = tmp.get
           if(isConstantObjective() || !ensureOptimumObjective) return tmp
 
@@ -116,7 +114,7 @@ class MIPSinglePointSolver[In, Label, Value: Numeric]
             minObj = Math.min(minObj, objV)
             minObjNEU = neu
           }
-        } else return tmp
+        }
       }
 
       if (minObj.isFinite)
