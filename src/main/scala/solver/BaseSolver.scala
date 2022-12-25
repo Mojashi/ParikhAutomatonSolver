@@ -5,7 +5,7 @@ import formula.{Add, And, AtomPredicate, Constant, EQ, Expression, GTEQ, LTEQ, O
 import graph.EdgeID
 
 import com.github.Mojashi.automaton.ParikhAutomaton
-import com.github.Mojashi.solver.algorithm.NumericCast
+import com.github.Mojashi.solver.common.NumericCast
 
 abstract class BaseSolver[In, Label, Value: Numeric, InnerValue: Numeric]
 (implicit valueM: Numeric[Value], innerM: Numeric[InnerValue], cast: NumericCast[Value, InnerValue])

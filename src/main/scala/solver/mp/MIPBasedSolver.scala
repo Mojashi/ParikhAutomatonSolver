@@ -8,8 +8,8 @@ import com.typesafe.scalalogging.Logger
 import com.github.Mojashi.automaton.ParikhAutomaton
 import com.github.Mojashi.formula.{And, AtomPredicate, Constant, EQ, Expression, GTEQ, LTEQ, Or, Predicate, Sub}
 import com.github.Mojashi.graph.{Edge, EdgeID}
-import com.github.Mojashi.solver.algorithm.Implicits.IntIntNumericCast
-import com.github.Mojashi.solver.algorithm.{CalcParikhConstrainedSolver, EulerConstrainedSolver, NumericCast}
+import com.github.Mojashi.solver.common.Implicits.IntIntNumericCast
+import com.github.Mojashi.solver.common.{CalcParikhConstrainedSolver, EulerConstrainedSolver, NumericCast}
 
 case class ExplicitMPConstraint
 (

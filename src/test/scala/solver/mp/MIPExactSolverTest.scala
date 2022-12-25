@@ -8,16 +8,17 @@ import com.github.Mojashi.automaton.impl.BricsNFAAdapter.BricsNFAAdapter
 import com.github.Mojashi.automaton.impl.ToParikhVectorTransducer.NFA_Parikh
 import com.github.Mojashi.formula.{And, Constant, EQ, GTEQ, Sub, Times, Var}
 import com.github.Mojashi.solver.ParikhAutomatonSolver
-import com.github.Mojashi.solver.algorithm.Implicits.IntDoubleNumericCast
-import com.github.Mojashi.solver.smt.SMTConventionalExactSolver
+import com.github.Mojashi.solver.common.Implicits.IntDoubleNumericCast
+import com.github.Mojashi.solver.smt.{SMTConventionalExactSolver, SMTCutExactSolver}
 import com.github.Mojashi.utils.{NFAToDot, showDotInBrowser}
 
 class MIPExactSolverTest extends AnyFunSuiteLike {
   com.google.ortools.Loader.loadNativeLibraries()
 
   val solverMakers = Seq(
-    (pa: ParikhAutomaton[Char, Char, Int]) => new MIPSinglePointSolver(pa),
-    (pa: ParikhAutomaton[Char, Char, Int]) => new SMTConventionalExactSolver(pa)
+//    (pa: ParikhAutomaton[Char, Char, Int]) => new MIPSinglePointSolver(pa),
+//    (pa: ParikhAutomaton[Char, Char, Int]) => new SMTConventionalExactSolver(pa),
+    (pa: ParikhAutomaton[Char, Char, Int]) => new SMTCutExactSolver(pa)
   )
 
   test("testSolveInput") {
@@ -33,7 +34,9 @@ class MIPExactSolverTest extends AnyFunSuiteLike {
       voa = a
     )
 
-    //showDotInBrowser(a.toDot)
+    // showDotInBrowser(pa.voa.toDot)
+
+    // showDotInBrowser(a.toDot)
     def testIt(solver: ParikhAutomatonSolver[Char, Char, Int]) = {
       val inputOpt = for {
         neu <- solver.solve()

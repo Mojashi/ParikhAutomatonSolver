@@ -1,5 +1,5 @@
 package com.github.Mojashi
-package solver.algorithm
+package solver.common
 
 import solver.BaseSolver
 

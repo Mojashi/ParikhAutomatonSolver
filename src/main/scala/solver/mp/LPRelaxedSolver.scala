@@ -6,7 +6,7 @@ import graph.EdgeID
 
 import com.google.ortools.linearsolver.MPSolver
 import com.typesafe.scalalogging.Logger
-import com.github.Mojashi.solver.algorithm.NumericCast
+import com.github.Mojashi.solver.common.NumericCast
 
 class LPRelaxedSolver[In, Label, Value: Numeric]
 (

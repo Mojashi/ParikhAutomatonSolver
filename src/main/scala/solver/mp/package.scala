@@ -1,11 +1,11 @@
 package com.github.Mojashi
 package solver
 
-import utils.{addVector, mulVector, subVector}
 
 import com.github.Mojashi.automaton.{NFA, Transition}
 import com.github.Mojashi.formula.{Add, Constant, Expression, Sub, Times, Var}
 import com.github.Mojashi.graph.{Edge, EdgeID}
+import com.github.Mojashi.utils.{subVector, addVector, mulVector}
 
 package object mp {
   def getCoefficients[Label, Value: Numeric]

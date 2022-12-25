@@ -37,7 +37,6 @@ class SMTConventionalExactSolver[In, Label]
       }).toMap
     }
 
-
     ret.toEither match {
       case Left(e) =>
         Logger("solve result").info(e.toString)

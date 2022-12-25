@@ -11,10 +11,10 @@ import org.sosy_lab.java_smt.SolverContextFactory.Solvers
 import org.sosy_lab.java_smt.api.{BooleanFormula, NumeralFormula}
 import org.sosy_lab.java_smt.api.SolverContext.ProverOptions
 import automaton.ParikhAutomaton
-import solver.algorithm.{CalcParikhConstrainedSolver, EulerConstrainedSolver}
+import solver.common.{CalcParikhConstrainedSolver, EulerConstrainedSolver}
 
 import com.github.Mojashi.formula.{Add, And, AtomPredicate, Constant, EQ, Expression, GTEQ, LTEQ, Or, Predicate, Sub, Times, Var}
-import com.github.Mojashi.solver.algorithm.Implicits.IntIntNumericCast
+import com.github.Mojashi.solver.common.Implicits.IntIntNumericCast
 
 import java.util
 import scala.collection.mutable

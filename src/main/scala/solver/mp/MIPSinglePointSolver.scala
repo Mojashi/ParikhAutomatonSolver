@@ -6,7 +6,7 @@ import com.typesafe.scalalogging.Logger
 import automaton.ParikhAutomaton
 import com.github.Mojashi.graph
 import graph.{EdgeID, StateID}
-import solver.algorithm.NumericCast
+import solver.common.NumericCast
 
 class MIPSinglePointSolver[In, Label, Value: Numeric]
 (
