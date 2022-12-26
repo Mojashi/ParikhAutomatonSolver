@@ -151,6 +151,19 @@ abstract class MIPBasedSolver[In, Label, Value: Numeric]
     )
   }
 
+  def solveInner: Option[Map[EdgeID, Double]] = {
+    val result = mpSolver.solve()
+    Logger("result").debug(result.toString)
+    if (result != MPSolver.ResultStatus.FEASIBLE && result != MPSolver.ResultStatus.OPTIMAL) {
+      return None
+    }
+
+    val numEdgeUsed: Map[EdgeID, Double] = pa.voa.transitions.map(t =>
+      (t.id, getInnerVariableForNumEdgeUsed(t.id).v.solutionValue())
+    ).toMap
+    Some(numEdgeUsed)
+  }
+
   initEulerConstraint
   initCalcParikhImageConstraint
   constraintPAConstraint

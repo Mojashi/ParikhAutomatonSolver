@@ -80,16 +80,10 @@ class MIPSinglePointSolver[In, Label, Value: Numeric]
         getInnerVariableForNumEdgeUsed(e.id).v.setUb(MPSolver.infinity())
     })
 
-    val result = mpSolver.solve()
-    Logger("result").debug(result.toString)
-    if (result != MPSolver.ResultStatus.FEASIBLE && result != MPSolver.ResultStatus.OPTIMAL) {
-      return None
-    }
-
+    val numEdgeUsedOpt = solveInner
+    if(numEdgeUsedOpt.isEmpty) return None
     val objectiveVal = mpSolver.objective().value()
-    val numEdgeUsed: Map[EdgeID, Double] = pa.voa.transitions.map(t =>
-      (t.id, getInnerVariableForNumEdgeUsed(t.id).v.solutionValue())
-    ).toMap
+    val numEdgeUsed = numEdgeUsedOpt.get
 
     val connectedComponents = graph.findConnectedComponent(pa.voa, numEdgeUsed)
 

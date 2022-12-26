@@ -18,7 +18,8 @@ class MIPExactSolverTest extends AnyFunSuiteLike {
   val solverMakers = Seq(
 //    (pa: ParikhAutomaton[Char, Char, Int]) => new MIPSinglePointSolver(pa),
 //    (pa: ParikhAutomaton[Char, Char, Int]) => new SMTConventionalExactSolver(pa),
-    (pa: ParikhAutomaton[Char, Char, Int]) => new SMTCutExactSolver(pa)
+//    (pa: ParikhAutomaton[Char, Char, Int]) => new SMTCutExactSolver(pa)
+    (pa: ParikhAutomaton[Char, Char, Int]) => new MIPCutWithLargeMExactSolver(pa)
   )
 
   test("testSolveInput") {
