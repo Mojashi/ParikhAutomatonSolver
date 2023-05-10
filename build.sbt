@@ -1,4 +1,4 @@
-ThisBuild / version := "0.5"
+ThisBuild / version := "0.5.7"
 
 ThisBuild / scalaVersion := "2.13.10"
 
@@ -29,6 +29,7 @@ libraryDependencies += "dk.brics" % "automaton" % "1.12-4"
 
 libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.2.10"
 libraryDependencies += "com.typesafe.scala-logging" %% "scala-logging" % "3.9.4"
+
 
 lazy val root = (project in file("."))
   .settings(

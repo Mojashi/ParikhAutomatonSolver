@@ -18,39 +18,38 @@ class SMTCutExactSolver[In, Label]
 ) extends SMTBasedSolver[In, Label] (
   pa, underlyingSolver
 ) {
+
+  var latestEarnedModel: Option[Map[InnerVarName, Double]] = None
+
+
   override def solve(): Option[Map[EdgeID, Double]] = {
-    def rec(): Option[Map[EdgeID, Double]] = {
+    def rec(): Option[Map[InnerVarName, Double]] = {
       Logger("solve result").debug("rec")
 
       if (prover.isUnsat)
         return None
 
-      val neuOption = Using(prover.getModel) { model =>
-        Logger("solve result").whenDebugEnabled (
-          variableRegistry.foreach { case (key, v) =>
-          //  Logger("solve result").debug(s"$key: ${model.evaluate(v.v)}")
-          }
-        )
-
-
-        pa.voa.transitions.map(t => {
-          val c = model.evaluate(getInnerVariableForNumEdgeUsed(t.id).v)
+      val modelEither = Using(prover.getModel()) { model =>
+        variableRegistry.map(v => {
+          val c = model.evaluate(v._2.v)
           if (c.doubleValue().round != c.intValueExact()) {
             throw new Exception("too big")
           }
-          (t.id, c.doubleValue())
+          (v._1, c.doubleValue())
         }).toMap
       }.toEither
 
-      neuOption match {
+      modelEither match {
         case Left(e) =>
           Logger("solve result").info(e.toString)
           Some(Map())
-        case Right(neu) =>
-          val cuts = pa.voa.calcNEUCut(pa.voa.start, neu)
+        case Right(model) =>
+          val cuts = pa.voa.calcNEUCut(pa.voa.start, pa.voa.transitions.map(t =>
+            (t.id, model.getOrElse(getInnerVariableForNumEdgeUsed(t.id).name, 0.0))
+          ).toMap)
 
           if (cuts.isEmpty) {
-            return Some(neu)
+            return Some(model)
           }
 
           for ((comp, cut) <- cuts) {
@@ -58,9 +57,7 @@ class SMTCutExactSolver[In, Label]
               Or(Seq(
                 And(Seq(
                   EQ(
-                    cut
-                      .map(e => Var[InnerVarName, Int](getInnerVariableForNumEdgeUsed(e).name))
-                      .fold[Expression[InnerVarName, Int]](Constant[InnerVarName, Int](0))((sum, c) => Add(sum, c)),
+                    Add(cut.map(e => Var[InnerVarName, Int](getInnerVariableForNumEdgeUsed(e).name))),
                     Constant[InnerVarName, Int](0),
                   )) ++
                   comp.flatMap(s =>
@@ -73,9 +70,7 @@ class SMTCutExactSolver[In, Label]
                   ),
                 ),
                 GTEQ(
-                  cut
-                    .map(e => Var[InnerVarName, Int](getInnerVariableForNumEdgeUsed(e).name))
-                    .fold(Constant[InnerVarName, Int](0))((sum, c) => Add(sum, c)),
+                  Add(cut.map(e => Var[InnerVarName, Int](getInnerVariableForNumEdgeUsed(e).name))),
                   Constant[InnerVarName, Int](1)
                 ),
               ))
@@ -88,6 +83,12 @@ class SMTCutExactSolver[In, Label]
     }
 
 
-    rec()
+    latestEarnedModel = rec()
+
+    latestEarnedModel.flatMap(model => Some(
+      pa.voa.transitions.map(t =>
+        (t.id, model.getOrElse(getInnerVariableForNumEdgeUsed(t.id).name, 0.0))
+      ).toMap
+    ))
   }
 }

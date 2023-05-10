@@ -1,72 +1,41 @@
 package com.github.Mojashi
-package solver.smt
+package solver.z3smt
 
 import automaton.ParikhAutomaton
-
-import com.typesafe.scalalogging.Logger
-import org.sosy_lab.java_smt.SolverContextFactory
-import org.sosy_lab.java_smt.SolverContextFactory.Solvers
-import formula.{Add, And, Constant, EQ, GTEQ, LTEQ, Or, Var}
+import formula._
 import graph.{EdgeID, StateID}
 
 import scala.util.Using
-
-class SMTConventionalExactSolver[In, Label]
+import com.microsoft.z3
+import com.microsoft.z3.IntNum
+class Z3ConventionalExactSolver[In, Label]
 (
   pa: ParikhAutomaton[In, Label, Int],
-  underlyingSolver: SolverContextFactory.Solvers = Solvers.SMTINTERPOL,
   timeout: Int = 30000,
-) extends SMTBasedSolver[In, Label] (
-  pa, underlyingSolver
+) extends Z3BasedSolver[In, Label] (
+  pa, timeout
 ) {
 
 
   var latestEarnedModel: Option[Map[InnerVarName, Double]] = None
 
   override def solve(): Option[Map[EdgeID, Double]] = {
-    var finished = false
-    if (timeout > 0) {
-      new Thread() {
-        override def run() = {
-          Thread.sleep(timeout)
+    val result = solver.check()
+    println(result)
 
-          finished.synchronized {
-            if (!finished) {
-              Logger("SMTConventionalExactSolver").info("timeout! shutdown requested")
-              shutdown.requestShutdown("timeout")
-            }
-          }
-        }
-      }.start()
-    }
-
-    val unsat = prover.isUnsat
-    finished.synchronized {
-      finished = true
-    }
-    if (unsat) {
+    if (result == z3.Status.UNSATISFIABLE) {
       latestEarnedModel = None
       return None
     }
-
-    val ret = Using(prover.getModel()) { model =>
-      variableRegistry.map(v =>{
-        val c = model.evaluate(v._2.v)
-        if (c.doubleValue().round != c.intValueExact()) {
-          throw new Exception("too big")
-        }
-        (v._1, c.doubleValue())
-      }).toMap
+    if(result == z3.Status.UNKNOWN) {
+      throw new Exception("timeout")
     }
 
-    latestEarnedModel = ret.toEither match {
-      case Left(e) =>
-        Logger("solve result").info(e.toString)
-        Some(Map())
-      case Right(r) =>
-        Logger("solve result").info(r.toString())
-        Some(r)
-    }
+    val model = solver.getModel()
+    latestEarnedModel = Some(variableRegistry.map(v =>{
+      val c = model.evaluate(v._2.v, true).asInstanceOf[IntNum].getInt
+      (v._1, c.doubleValue())
+    }).toMap)
 
     latestEarnedModel.flatMap(model => Some(
       pa.voa.transitions.map(t =>

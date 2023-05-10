@@ -14,6 +14,7 @@ import automaton.ParikhAutomaton
 import solver.common.{CalcParikhConstrainedSolver, EulerConstrainedSolver}
 
 import com.github.Mojashi.formula.{Add, And, AtomPredicate, Constant, EQ, Expression, GTEQ, LTEQ, Or, Predicate, Sub, Times, Var}
+import com.github.Mojashi.graph.EdgeID
 import com.github.Mojashi.solver.common.Implicits.IntIntNumericCast
 
 import java.util
@@ -38,7 +39,7 @@ abstract class SMTBasedSolver[In, Label]
 
   private val config = Configuration.defaultConfiguration()
   private val logger = BasicLogManager.create(config)
-  private val shutdown = ShutdownManager.create
+  protected val shutdown = ShutdownManager.create
   private val context = SolverContextFactory.createSolverContext(config, logger, shutdown.getNotifier, underlyingSolver)
   protected val imgr = context.getFormulaManager.getIntegerFormulaManager
   protected val bmgr = context.getFormulaManager.getBooleanFormulaManager
@@ -52,7 +53,7 @@ abstract class SMTBasedSolver[In, Label]
     )
   }
 
-  override def setObjective(minimize: Expression[Label, Int]): Unit = {
+  override def setObjective(minimize: Expression[Either[Label, EdgeID], Int]): Unit = {
     throw new Exception("You cannot set objective with SMT")
   }
 
@@ -76,7 +77,7 @@ abstract class SMTBasedSolver[In, Label]
 
   def convExpr[L](e: Expression[L, Int]): NumeralFormula.IntegerFormula = {
     e match {
-      case Add(left, right) => imgr.add(convExpr(left), convExpr(right))
+      case Add(terms) => terms.map(convExpr).fold(imgr.makeNumber(0)){case (a,b) => imgr.add(a,b)}
       case Sub(left, right) => imgr.subtract(convExpr(left), convExpr(right))
       case Times(constant, t) => imgr.multiply(convExpr(constant), convExpr(t))
       case Constant(v) => imgr.makeNumber(v)

@@ -17,22 +17,30 @@ class MIPCutWithLargeMExactSolver[In, Label, Value: Numeric]
 (
   pa: ParikhAutomaton[In, Label, Value],
   underlyingSolver: ORToolsMIPSolver = ORToolsMIPSolver.SCIP,
-  largeConstant: Double = 1e6
+  largeConstant: Double = 1e6,
+  singleTimeout: Int = 30000,
 )(implicit cast: NumericCast[Value, Double])
-  extends MIPBasedSolver[In, Label, Value](pa, lpRelaxed = false, ensureConnectivity = true, underlyingSolver = underlyingSolver) {
+  extends MIPBasedSolver[In, Label, Value](pa, lpRelaxed = false, ensureConnectivity = true, underlyingSolver = underlyingSolver, singleTimeout=singleTimeout) {
 
+
+  var latestEarnedModel: Option[Map[InnerVarName, Double]] = None
   override def solve(): Option[Map[EdgeID, Double]] = {
-    def rec(): Option[Map[EdgeID, Double]] = {
+    def rec(): Option[Map[InnerVarName, Double]] = {
       Logger("solve result").debug("rec")
 
-      val numEdgeUsedOpt = solveInner
-      if (numEdgeUsedOpt.isEmpty) return None
-      val numEdgeUsed = numEdgeUsedOpt.get
+
+      val modelOpt = solveInner
+      if (modelOpt.isEmpty) return None
+      val model = modelOpt.get
+
+      val numEdgeUsed = pa.voa.transitions.map(t =>
+        (t.id, model.getOrElse(getInnerVariableForNumEdgeUsed(t.id).name, 0.0))
+      ).toMap
 
       val cuts = pa.voa.calcNEUCut(pa.voa.start, numEdgeUsed)
 
       if (cuts.isEmpty) {
-        return Some(numEdgeUsed)
+        return Some(model)
       }
 
       for ((comp, cut) <- cuts) {
@@ -40,16 +48,15 @@ class MIPCutWithLargeMExactSolver[In, Label, Value: Numeric]
           GTEQ(
             Times(
               Constant[InnerVarName, Double](largeConstant),
-              cut
+              Add(cut
                 .map(e => Var[InnerVarName, Double](getInnerVariableForNumEdgeUsed(e).name))
-                .fold[Expression[InnerVarName, Double]](Constant[InnerVarName, Double](0))((sum, c) => Add(sum, c)),
+              )
             ),
-            comp.flatMap(s =>
+            Add(comp.flatMap(s =>
               pa.voa.sourceFrom(s).map(t =>
                 Var[InnerVarName, Double](getInnerVariableForNumEdgeUsed(t.id).name),
               )
-            )
-              .fold(Constant[InnerVarName, Double](0))((sum, c) => Add(sum, c))
+            ))
           )
         )
       }
@@ -58,6 +65,11 @@ class MIPCutWithLargeMExactSolver[In, Label, Value: Numeric]
     }
 
 
-    rec()
+    latestEarnedModel = rec()
+    latestEarnedModel.flatMap(model =>
+      Some(pa.voa.transitions.map(t =>
+        (t.id, model.getOrElse(getInnerVariableForNumEdgeUsed(t.id).name, 0.0))
+      ).toMap)
+    )
   }
 }

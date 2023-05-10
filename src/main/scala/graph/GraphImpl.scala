@@ -1,7 +1,7 @@
 package com.github.Mojashi
 package graph
 
-class GraphImpl[E <: Edge]
+case class GraphImpl[E <: Edge]
 (
   override val transitions: Seq[E]
 ) extends Graph[E] {

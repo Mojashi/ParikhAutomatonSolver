@@ -11,6 +11,8 @@ import com.github.Mojashi.graph.{Edge, EdgeID}
 import com.github.Mojashi.solver.common.Implicits.IntIntNumericCast
 import com.github.Mojashi.solver.common.{CalcParikhConstrainedSolver, EulerConstrainedSolver, NumericCast}
 
+import scala.collection.mutable
+
 case class ExplicitMPConstraint
 (
   v: Map[String, Double],
@@ -23,6 +25,7 @@ abstract class MIPBasedSolver[In, Label, Value: Numeric]
   val lpRelaxed:Boolean = false,
   val ensureConnectivity: Boolean = true,
   val underlyingSolver: ORToolsMIPSolver = ORToolsMIPSolver.SCIP,
+  val singleTimeout: Int = 30000
 ) (implicit cast: NumericCast[Value, Double])
   extends BaseSolver[In, Label, Value, Double]
     with ParikhAutomatonSolver[In, Label, Value]
@@ -38,18 +41,25 @@ abstract class MIPBasedSolver[In, Label, Value: Numeric]
     throw new RuntimeException(s"${underlyingSolver.name} doesn't support integer variables. Try another solver or set lpRelaxed = true.")
   }
   val mpSolver = MPSolver.createSolver(underlyingSolver.name)
+  mpSolver.setTimeLimit(singleTimeout)
+
 
   val m = implicitly[Numeric[Value]]
 
   val objective = Constant(0)
 
-  override def setObjective(minimize: Expression[Label, Value]): Unit = {
+  override def setObjective(minimize: Expression[Either[Label, EdgeID], Value]): Unit = {
     val (coeffs, constant) = getCoefficients(minimize)
     val obj = mpSolver.objective()
     obj.clear()
 
     for ((t, coeff) <- coeffs) {
-      obj.setCoefficient(getInnerVariableForLabel(t).v, m.toDouble(coeff))
+      t match {
+        case Left(label) =>
+          obj.setCoefficient(getInnerVariableForLabel(label).v, m.toDouble(coeff))
+        case Right(edgeId) =>
+          obj.setCoefficient(getInnerVariableForNumEdgeUsed(edgeId).v, m.toDouble(coeff))
+      }
     }
     obj.setMinimization()
   }
@@ -61,13 +71,18 @@ abstract class MIPBasedSolver[In, Label, Value: Numeric]
     }
   }
 
+  val innerVars = mutable.Set[InnerVarWithName]()
+
   override def getInnerVariable(name: InnerVarName): InnerVarWithName = {
     val ret = mpSolver.lookupVariableOrNull(name)
     if(ret == null) {
-      InnerVarWithName(
-        name=name,
-        v=mpSolver.makeVar(-MPSolver.infinity(), MPSolver.infinity(), false, name)
+      val varWithName = InnerVarWithName(
+        name = name,
+        v = mpSolver.makeVar(-MPSolver.infinity(), MPSolver.infinity(), false, name)
       )
+      innerVars.add(varWithName)
+      varWithName
+
     } else {
       InnerVarWithName(
         name=name,
@@ -151,17 +166,21 @@ abstract class MIPBasedSolver[In, Label, Value: Numeric]
     )
   }
 
-  def solveInner: Option[Map[EdgeID, Double]] = {
+  def solveInner: Option[Map[InnerVarName, Double]] = {
     val result = mpSolver.solve()
+
     Logger("result").debug(result.toString)
+    if(result == MPSolver.ResultStatus.ABNORMAL || result == MPSolver.ResultStatus.NOT_SOLVED) {
+      throw new Error("timeout or some error has occurred")
+    }
     if (result != MPSolver.ResultStatus.FEASIBLE && result != MPSolver.ResultStatus.OPTIMAL) {
       return None
     }
 
-    val numEdgeUsed: Map[EdgeID, Double] = pa.voa.transitions.map(t =>
-      (t.id, getInnerVariableForNumEdgeUsed(t.id).v.solutionValue())
+    val model: Map[InnerVarName, Double] = innerVars.map(t =>
+      (t.name, t.v.solutionValue())
     ).toMap
-    Some(numEdgeUsed)
+    Some(model)
   }
 
   initEulerConstraint

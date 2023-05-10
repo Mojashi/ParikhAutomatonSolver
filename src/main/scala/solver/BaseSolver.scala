@@ -7,6 +7,8 @@ import graph.EdgeID
 import com.github.Mojashi.automaton.ParikhAutomaton
 import com.github.Mojashi.solver.common.NumericCast
 
+import scala.collection.mutable
+
 abstract class BaseSolver[In, Label, Value: Numeric, InnerValue: Numeric]
 (implicit valueM: Numeric[Value], innerM: Numeric[InnerValue], cast: NumericCast[Value, InnerValue])
 {
@@ -17,7 +19,6 @@ abstract class BaseSolver[In, Label, Value: Numeric, InnerValue: Numeric]
 
   val pa: ParikhAutomaton[In, Label, Value]
   val labels = pa.voa.transitions.flatMap(t => t.out.getOrElse(Map()).keys).toSet
-
 
   case class InnerVarWithName (
     name: InnerVarName,
@@ -53,7 +54,7 @@ abstract class BaseSolver[In, Label, Value: Numeric, InnerValue: Numeric]
   def convParikhPredicateToInner(p: Predicate[Label, Value]): Predicate[InnerVarName, InnerValue] = {
     p match {
       case And(ps) => And[InnerVarName,InnerValue](ps.map(convParikhPredicateToInner))
-      case Or(ps) => And[InnerVarName,InnerValue](ps.map(convParikhPredicateToInner))
+      case Or(ps) => Or[InnerVarName,InnerValue](ps.map(convParikhPredicateToInner))
       case p: AtomPredicate[Label,Value] => convParikhAtomPredicateToInner(p)
     }
   }
@@ -68,7 +69,7 @@ abstract class BaseSolver[In, Label, Value: Numeric, InnerValue: Numeric]
 
   def convParikhExprToInner(p: Expression[Label, Value]): Expression[InnerVarName, InnerValue] = {
     p match {
-      case Add(left, right) => Add[InnerVarName,InnerValue](convParikhExprToInner(left), convParikhExprToInner(right))(innerM)
+      case Add(terms) => Add[InnerVarName,InnerValue](terms.map(convParikhExprToInner))(innerM)
       case Sub(left, right) => Sub[InnerVarName,InnerValue](convParikhExprToInner(left), convParikhExprToInner(right))(innerM)
       case Times(left, right) => Times[InnerVarName,InnerValue](Constant(cast.cast(left.v)), convParikhExprToInner(right))(innerM)
       case Var(v) => Var[InnerVarName,InnerValue](getInnerVariableForLabel(v).name)

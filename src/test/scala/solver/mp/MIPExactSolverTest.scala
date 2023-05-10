@@ -10,20 +10,22 @@ import com.github.Mojashi.formula.{And, Constant, EQ, GTEQ, Sub, Times, Var}
 import com.github.Mojashi.solver.ParikhAutomatonSolver
 import com.github.Mojashi.solver.common.Implicits.IntDoubleNumericCast
 import com.github.Mojashi.solver.smt.{SMTConventionalExactSolver, SMTCutExactSolver}
+import com.github.Mojashi.solver.z3smt.Z3ConventionalExactSolver
 import com.github.Mojashi.utils.{NFAToDot, showDotInBrowser}
 
 class MIPExactSolverTest extends AnyFunSuiteLike {
   com.google.ortools.Loader.loadNativeLibraries()
 
   val solverMakers = Seq(
-//    (pa: ParikhAutomaton[Char, Char, Int]) => new MIPSinglePointSolver(pa),
-//    (pa: ParikhAutomaton[Char, Char, Int]) => new SMTConventionalExactSolver(pa),
-//    (pa: ParikhAutomaton[Char, Char, Int]) => new SMTCutExactSolver(pa)
-    (pa: ParikhAutomaton[Char, Char, Int]) => new MIPCutWithLargeMExactSolver(pa)
+    //(pa: ParikhAutomaton[Char, Char, Int]) => new MIPSinglePointSolver(pa),
+    //(pa: ParikhAutomaton[Char, Char, Int]) => new SMTConventionalExactSolver(pa, timeout = 10),
+    (pa: ParikhAutomaton[Char, Char, Int]) => new Z3ConventionalExactSolver(pa, timeout = 10),
+    //(pa: ParikhAutomaton[Char, Char, Int]) => new SMTCutExactSolver(pa),
+    //(pa: ParikhAutomaton[Char, Char, Int]) => new MIPCutWithLargeMExactSolver(pa)
   )
 
   test("testSolveInput") {
-    val r = new RegExp("xy+z+k*l")
+    val r = new RegExp("xy+z+k*l+z(k*l+z+k*l+z+((k*l+z+k*)+aa|(l+z+k*lxy+z+k*l)+)*a+aaaaz+k*l+z+k*)*(k*l+z+k*l+z+((k*l+z+k*)+aa|(l+z+k*lxy+z+k*l)+)*a+aaaaz+k*l+z+k*)*(k*l+z+k*l+z+((k*l+z+k*)+aa|(l+z+k*lxy+z+k*l)+)*a+aaaaz+k*l+z+k*)*(k*l+z+k*l+z+((k*l+z+k*)+aa|(l+z+k*lxy+z+k*l)+)*a+aaaaz+k*l+z+k*)*l+z+k*l+z+k*l+z+k*lxy+z+k*l+z+k*l+z+k*l+z+k*l+z+k*l+z+k*l")
     val a = r.toAutomaton().toNFA.toParikhVectorTransducer
 
     val pa = ParikhAutomaton(

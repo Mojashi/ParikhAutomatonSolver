@@ -14,13 +14,12 @@ case class Constant[Variable, Value]
 
 case class Add[Variable, Value: Numeric]
 (
-  left: Expression[Variable, Value],
-  right: Expression[Variable, Value],
+  terms: Seq[Expression[Variable, Value]]
 ) extends Expression[Variable, Value] {
   val n = implicitly[Numeric[Value]]
 
   def eval(assigns: Map[Variable, Value]) =
-    n.plus(left.eval(assigns: Map[Variable, Value]), right.eval(assigns: Map[Variable, Value]))
+    terms.map(t=>t.eval(assigns)).fold(n.zero)(n.plus)
 }
 
 case class Sub[Variable, Value: Numeric]

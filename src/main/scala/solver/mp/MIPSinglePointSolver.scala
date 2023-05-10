@@ -14,8 +14,9 @@ class MIPSinglePointSolver[In, Label, Value: Numeric]
   lpRelaxed: Boolean = false,
   ensureOptimumObjective: Boolean = true,
   underlyingSolver: ORToolsMIPSolver = ORToolsMIPSolver.SCIP,
+  singleTimeout: Int = 30000,
 )(implicit cast: NumericCast[Value, Double])
-  extends MIPBasedSolver[In, Label, Value](pa, lpRelaxed, ensureConnectivity = true, underlyingSolver = underlyingSolver) {
+  extends MIPBasedSolver[In, Label, Value](pa, lpRelaxed, ensureConnectivity = true, underlyingSolver = underlyingSolver, singleTimeout=singleTimeout) {
 
 
   def initConnectivityFlowConstraint = {
@@ -60,13 +61,14 @@ class MIPSinglePointSolver[In, Label, Value: Numeric]
     getConstraint(s"FLOW_CONSTRAINT{$state}")
   }
 
-  def rec(connected: Set[StateID], notConnected: Set[StateID]): Option[(Double, Map[EdgeID, Double])] = {
+  def rec(connected: Set[StateID], notConnected: Set[StateID]): Option[(Double, Map[InnerVarName, Double])] = {
     Logger("rec").debug(s"rec: ${connected.size}")
 
     assert(pa.voa.fin != notConnected)
     assert(pa.voa.fin != connected)
     assert(notConnected.intersect(connected).isEmpty)
 
+    if(connected.nonEmpty) initConnectivityFlow()
     pa.voa.states.foreach(v => {
       if (connected.contains(v))
         getMPConstraintForConnectivityFlow(v).setLb(Math.min(0.1, 1.0 / connected.size))
@@ -80,12 +82,15 @@ class MIPSinglePointSolver[In, Label, Value: Numeric]
         getInnerVariableForNumEdgeUsed(e.id).v.setUb(MPSolver.infinity())
     })
 
-    val numEdgeUsedOpt = solveInner
-    if(numEdgeUsedOpt.isEmpty) return None
+    val modelOpt = solveInner
+    if(modelOpt.isEmpty) return None
     val objectiveVal = mpSolver.objective().value()
-    val numEdgeUsed = numEdgeUsedOpt.get
+    val model = modelOpt.get
 
-    val connectedComponents = graph.findConnectedComponent(pa.voa, numEdgeUsed)
+    val neu = pa.voa.transitions.map(t =>
+      (t.id, model.getOrElse(getInnerVariableForNumEdgeUsed(t.id).name, 0.0))
+    ).toMap
+    val connectedComponents = graph.findConnectedComponent(pa.voa, neu)
 
     val mainComponent = connectedComponents.find(pa.voa.start)
     assert(connected.forall(s => connectedComponents.find(s) == mainComponent))
@@ -95,7 +100,7 @@ class MIPSinglePointSolver[In, Label, Value: Numeric]
     if (notConnectedRootOpt.isDefined) {
       val notConnectedRoot = notConnectedRootOpt.get
       var minObj = MPSolver.infinity()
-      var minObjNEU = Map[EdgeID, Double]()
+      var minObjModel = Map[InnerVarName, Double]()
 
       for ((newConnected, newNotConnected) <- Seq((Set(notConnectedRoot), Set()), (Set(), Set(notConnectedRoot)))) {
         val tmp = rec(connected ++ newConnected, notConnected ++ newNotConnected)
@@ -106,27 +111,44 @@ class MIPSinglePointSolver[In, Label, Value: Numeric]
 
           if (minObj > objV) {
             minObj = Math.min(minObj, objV)
-            minObjNEU = neu
+            minObjModel = neu
           }
         }
       }
 
       if (minObj.isFinite)
-        Some((minObj, minObjNEU))
+        Some(minObj, minObjModel)
       else
         None
     } else {
-      Some(objectiveVal, numEdgeUsed)
+      Some(objectiveVal, model)
     }
   }
+
+  var latestEarnedModel: Option[Map[InnerVarName, Double]] = None
   override def solve(): Option[Map[EdgeID, Double]] = {
     val ret = rec(Set(), Set())
-    println(ret)
-    ret.flatMap(r => Some(r._2))
+    //println(ret)
+
+    latestEarnedModel = ret.flatMap(r=>Some(r._2))
+
+    latestEarnedModel.flatMap(model =>
+      Some(
+        pa.voa.transitions.map(t =>
+          (t.id, model.getOrElse(getInnerVariableForNumEdgeUsed(t.id).name, 0.0))
+        ).toMap
+      )
+    )
   }
 
 
-  initConnectivityFlowConstraint
-  constraintConnectivityFlowIsPositive
+  var initializedConnectivityFlow = false
+  def initConnectivityFlow() = {
+    if(!initializedConnectivityFlow) {
+      initializedConnectivityFlow = true
+      initConnectivityFlowConstraint
+      constraintConnectivityFlowIsPositive
+    }
+  }
 }
 

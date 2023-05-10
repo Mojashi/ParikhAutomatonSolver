@@ -16,9 +16,9 @@ object utils {
 
   def addVector[Key, Value: Numeric](l: Map[Key, Value], r: Map[Key, Value])
                                     (implicit m: Numeric[Value]): Map[Key, Value] = {
-    (l.keys ++ r.keys).map(key =>
-      (key, m.plus(l.getOrElse(key, m.zero), r.getOrElse(key, m.zero)))
-    ).toMap
+    l ++ r.map { case (k, v) =>
+      (k, m.plus(l.getOrElse(k, m.zero), v))
+    }
   }
 
   def subVector[Key, Value: Numeric](l: Map[Key, Value], r: Map[Key, Value])

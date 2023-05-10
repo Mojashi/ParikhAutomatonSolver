@@ -12,10 +12,9 @@ package object mp {
     (expression: Expression[Label, Value]): (Map[Label, Value], Value) = {
     val m = implicitly[Numeric[Value]]
     expression match {
-      case Add(left, right) =>
-        val (l, lc) = getCoefficients(left)
-        val (r, rc) = getCoefficients(right)
-        (addVector(l,r), m.plus(lc, rc))
+      case Add(terms) =>
+        terms.map(t=>getCoefficients(t))
+          .fold((Map[Label, Value](), m.zero))((l,r) => (addVector(l._1, r._1), m.plus(l._2, r._2)))
       case Sub(left, right) =>
         val (l, lc) = getCoefficients(left)
         val (r, rc) = getCoefficients(right)

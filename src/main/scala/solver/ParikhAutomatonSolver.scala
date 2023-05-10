@@ -11,7 +11,7 @@ trait ParikhAutomatonSolver[In, Label, Value] {
   def solve(): Option[Map[EdgeID, Double]]
 
   val pa: ParikhAutomaton[In, Label, Value]
-  def setObjective(minimize: Expression[Label, Value])
+  def setObjective(minimize: Expression[Either[Label, EdgeID], Value])
 
   type ConstraintID = String
   def addConstraint(constraint: Predicate[Label, Value], constraintID: ConstraintID = ""): ConstraintID
