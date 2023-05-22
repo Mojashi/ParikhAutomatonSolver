@@ -3,6 +3,8 @@ package automaton.impl
 
 import automaton.{NFTransducer, TransducerTransition, VectorOutputTransducer}
 
+import scala.language.implicitConversions
+
 object ToVectorOutputTransducerConv {
   implicit def ToVectorOutputTransducerConv[In, Label, Value: Numeric]
   (

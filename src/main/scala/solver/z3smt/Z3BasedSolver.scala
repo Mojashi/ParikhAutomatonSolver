@@ -55,8 +55,9 @@ abstract class Z3BasedSolver[In, Label]
     solver.add(constraint)
   }
 
-  override def addInnerConstraint(p: Predicate[InnerVarName, Int]) = {
+  override def addInnerConstraint(p: Predicate[InnerVarName, Int]): Seq[ConstraintID] = {
     addInnerConstraint(convPredicate(p))
+    Seq()
   }
 
   def convPredicate[L](p: Predicate[L, Int]): InnerConstraint = {
@@ -88,9 +89,9 @@ abstract class Z3BasedSolver[In, Label]
   }
 
 
-  override def addConstraint(constraint: Predicate[Label, Int], constraintID: String): String = {
+  override def addConstraint(constraint: Predicate[Label, Int], constraintID: String): Seq[ConstraintID] = {
     addInnerConstraint(convParikhPredicateToInner(constraint))
-    constraintID
+    Seq(constraintID)
   }
 
   constraintNumEdgeUsedIsPositive

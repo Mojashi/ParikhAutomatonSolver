@@ -57,12 +57,13 @@ abstract class SMTBasedSolver[In, Label]
     throw new Exception("You cannot set objective with SMT")
   }
 
-  def addInnerConstraint(constraint: InnerConstraint) = {
+  def addInnerConstraint(constraint: InnerConstraint): ConstraintID = {
     prover.addConstraint(constraint)
+    ""
   }
 
-  override def addInnerConstraint(p: Predicate[InnerVarName, Int]) = {
-    addInnerConstraint(convPredicate(p))
+  override def addInnerConstraint(p: Predicate[InnerVarName, Int]): Seq[ConstraintID] = {
+    Seq(addInnerConstraint(convPredicate(p)))
   }
 
   def convPredicate[L](p: Predicate[L, Int]): BooleanFormula = {
@@ -95,9 +96,9 @@ abstract class SMTBasedSolver[In, Label]
   }
 
 
-  override def addConstraint(constraint: Predicate[Label, Int], constraintID: String): String = {
+  override def addConstraint(constraint: Predicate[Label, Int], constraintID: String): Seq[ConstraintID] = {
     addInnerConstraint(convParikhPredicateToInner(constraint))
-    constraintID
+    Seq(constraintID)
   }
 
   constraintNumEdgeUsedIsPositive

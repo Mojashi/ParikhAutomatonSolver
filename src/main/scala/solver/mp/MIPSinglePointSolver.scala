@@ -127,11 +127,11 @@ class MIPSinglePointSolver[In, Label, Value: Numeric]
 
   var latestEarnedModel: Option[Map[InnerVarName, Double]] = None
   override def solve(): Option[Map[EdgeID, Double]] = {
-    val ret = rec(Set(), Set())
+
+    val ret = orHandleSolve(() => rec(Set(), Set()).flatMap(r => Some(r._2)))
     //println(ret)
 
-    latestEarnedModel = ret.flatMap(r=>Some(r._2))
-
+    latestEarnedModel = ret
     latestEarnedModel.flatMap(model =>
       Some(
         pa.voa.transitions.map(t =>

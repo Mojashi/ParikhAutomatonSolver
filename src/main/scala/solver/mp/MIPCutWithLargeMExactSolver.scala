@@ -28,7 +28,6 @@ class MIPCutWithLargeMExactSolver[In, Label, Value: Numeric]
     def rec(): Option[Map[InnerVarName, Double]] = {
       Logger("solve result").debug("rec")
 
-
       val modelOpt = solveInner
       if (modelOpt.isEmpty) return None
       val model = modelOpt.get
@@ -61,11 +60,11 @@ class MIPCutWithLargeMExactSolver[In, Label, Value: Numeric]
         )
       }
 
-      rec()
+      rec
     }
 
 
-    latestEarnedModel = rec()
+    latestEarnedModel = orHandleSolve(rec)
     latestEarnedModel.flatMap(model =>
       Some(pa.voa.transitions.map(t =>
         (t.id, model.getOrElse(getInnerVariableForNumEdgeUsed(t.id).name, 0.0))

@@ -31,7 +31,8 @@ package object mp {
     graph.getEulerTrail(
       nfa,
       neu.map { case (e, c) =>
-        assert(Math.abs(Math.round(c) - c) < 0.01)
+        if (Math.abs(Math.round(c) - c) >= 0.01)
+          throw new RuntimeException(s"non integer coefficient: $e -> $c")
         (e, Math.round(c).toInt)
     }).flatMap(t => t.in)
   }

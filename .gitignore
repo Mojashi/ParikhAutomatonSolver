@@ -4,4 +4,5 @@
 *.dylib
 /lib/
 .DS_Store
-.idea/
+/.idea/
+/.bsp/

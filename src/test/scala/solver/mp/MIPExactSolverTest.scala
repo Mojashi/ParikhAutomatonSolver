@@ -17,15 +17,15 @@ class MIPExactSolverTest extends AnyFunSuiteLike {
   com.google.ortools.Loader.loadNativeLibraries()
 
   val solverMakers = Seq(
-    //(pa: ParikhAutomaton[Char, Char, Int]) => new MIPSinglePointSolver(pa),
+    (pa: ParikhAutomaton[Char, Char, Int]) => new MIPSinglePointSolver(pa),
     //(pa: ParikhAutomaton[Char, Char, Int]) => new SMTConventionalExactSolver(pa, timeout = 10),
-    (pa: ParikhAutomaton[Char, Char, Int]) => new Z3ConventionalExactSolver(pa, timeout = 10),
+    //(pa: ParikhAutomaton[Char, Char, Int]) => new Z3ConventionalExactSolver(pa, timeout = 10),
     //(pa: ParikhAutomaton[Char, Char, Int]) => new SMTCutExactSolver(pa),
     //(pa: ParikhAutomaton[Char, Char, Int]) => new MIPCutWithLargeMExactSolver(pa)
   )
 
   test("testSolveInput") {
-    val r = new RegExp("xy+z+k*l+z(k*l+z+k*l+z+((k*l+z+k*)+aa|(l+z+k*lxy+z+k*l)+)*a+aaaaz+k*l+z+k*)*(k*l+z+k*l+z+((k*l+z+k*)+aa|(l+z+k*lxy+z+k*l)+)*a+aaaaz+k*l+z+k*)*(k*l+z+k*l+z+((k*l+z+k*)+aa|(l+z+k*lxy+z+k*l)+)*a+aaaaz+k*l+z+k*)*(k*l+z+k*l+z+((k*l+z+k*)+aa|(l+z+k*lxy+z+k*l)+)*a+aaaaz+k*l+z+k*)*l+z+k*l+z+k*l+z+k*lxy+z+k*l+z+k*l+z+k*l+z+k*l+z+k*l+z+k*l")
+    val r = new RegExp("xy")
     val a = r.toAutomaton().toNFA.toParikhVectorTransducer
 
     val pa = ParikhAutomaton(

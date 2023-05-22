@@ -16,6 +16,7 @@ abstract class BaseSolver[In, Label, Value: Numeric, InnerValue: Numeric]
   type InnerVar
   type InnerExpr
   type InnerConstraint
+  type ConstraintID
 
   val pa: ParikhAutomaton[In, Label, Value]
   val labels = pa.voa.transitions.flatMap(t => t.out.getOrElse(Map()).keys).toSet
@@ -26,7 +27,7 @@ abstract class BaseSolver[In, Label, Value: Numeric, InnerValue: Numeric]
   )
   def getInnerVariable(name: InnerVarName): InnerVarWithName
 
-  def addInnerConstraint(p: Predicate[InnerVarName, InnerValue])
+  def addInnerConstraint(p: Predicate[InnerVarName, InnerValue]): Seq[ConstraintID]
 
   def addInnerAtomConstraint(p: AtomPredicate[InnerVarName, InnerValue]): Any
 
